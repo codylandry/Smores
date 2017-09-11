@@ -13,4 +13,4 @@ The primary concept is that templates can be created for schemas.  As the templa
 - add a way to customize user facing syntax (delimiters for dot operator and list indexing)
 - add ability to blacklist fields from being included in templates
 - add ability to specify a template for (non-Nested) fields
-
+- add ability to keep schema templates in separate files
