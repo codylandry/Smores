@@ -72,7 +72,6 @@ class User(Schema):
 	def smores_template():
 		return """
 			<div>
-				this is from the user schema
 				{{ 'id' | get_data }}
 				{{ 'name' | get_data }} 
 				{{ 'email' | get_data }} 
@@ -86,8 +85,15 @@ class User(Schema):
 
 template = """
 	<div>
-		<div>{{ 'user' | get_data }}</div>
-		{{ 'address' | get_data }}
+		<div>Dear {{ 'user.name' | get_data }}:</div>
+		<p>
+			Here's all the information we have about you!
+			
+			{{ 'user' | get_data }}
+		</p>
+		<p>Sincerely,</p>
+		<p>{{ 'company.name' | get_data }} - {{ 'company.catchPhrase' | get_data }}</p>
+		<em>{{ 'company.bs' | get_data }}</em>
 	</div>
 """
 
@@ -97,13 +103,17 @@ print render(SAMPLE_DATA[0], User, template)
 # outputs:
 """
 	<div>
-		<div>
+		<div>Dear Leanne Graham:</div>
+		<p>
+			Here's all the information we have about you!
+			
+			
 			<div>
 				this is from the user schema
 				1
 				Leanne Graham 
 				Sincere@april.biz 
-
+				
 			<div>
 				Address
 				<div>street: Kulas Light</div>
@@ -111,38 +121,26 @@ print render(SAMPLE_DATA[0], User, template)
 				<div>city: Gwenborough</div>
 				<div>zipcode: 92998-3874</div>
 				<div>
-
+					
 			<ul>
 				Coordinates
 				<li>lat: -37.3159</li>
 				<li>lng: 81.1496</li>
 			</ul>
-
+			
 				</div>
 			</div>
-
+			 
 				1-770-736-8031 x56442 
 				hildegard.org 
 				Romaguera-Crona 
 			</div>
-			</div>
-
-			<div>
-				Address
-				<div>street: Kulas Light</div>
-				<div>suite: Apt. 556</div>
-				<div>city: Gwenborough</div>
-				<div>zipcode: 92998-3874</div>
-				<div>
-
-			<ul>
-				Coordinates
-				<li>lat: -37.3159</li>
-				<li>lng: 81.1496</li>
-			</ul>
-
-				</div>
-			</div>
-
+			
+		</p>
+		
+		<p>Sincerely,</p>
+		<p>Romaguera-Crona - Multi-layered client-server neural-net</p>
+		<em>harness real-time e-markets</em>
+		
 	</div>
 """
