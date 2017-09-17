@@ -1,22 +1,16 @@
 from marshmallow import Schema, fields
 from sample_data import SAMPLE_DATA
-from smores import render
-
+from smores import render, TemplateString, TemplateFile
 
 # EXAMPLE Marshmallow Schemas
 class Coordinates(Schema):
 	lat = fields.Decimal()
 	lng = fields.Decimal()
-
-	@staticmethod
-	def smores_template():
-		return """
-			<ul>
-				Coordinates
-				<li>lat: {{ 'lat' | get_data }}</li>
-				<li>lng: {{ 'lng' | get_data }}</li>
-			</ul>
-			"""
+	_default_template = TemplateString("""
+		<div>
+			{{lat}}, {{lng}}
+		</div>
+	""")
 
 
 class Address(Schema):
@@ -25,39 +19,36 @@ class Address(Schema):
 	city = fields.String()
 	zipcode = fields.String()
 	geo = fields.Nested(Coordinates)
-
-	@staticmethod
-	def smores_template():
-		return """
+	_default_template = TemplateString("""
+		<div>
+			<div>street: {{ street }}</div>
+			<div>suite: {{ suite }}</div>
+			<div>city: {{ city }}</div>
+			<div>zipcode: {{ zipcode }}</div>
 			<div>
-				Address
-				<div>street: {{ 'street' | get_data }}</div>
-				<div>suite: {{ 'suite' | get_data }}</div>
-				<div>city: {{ 'city' | get_data }}</div>
-				<div>zipcode: {{ 'zipcode' | get_data }}</div>
-				<div>
-					{{ 'geo' | get_data }}
-				</div>
+				{{ geo }}
 			</div>
-			"""
+		</div>
+	""")
 
 
 class Company(Schema):
 	name = fields.String()
 	catchPhrase = fields.String()
 	bs = fields.String()
+	_default_template = TemplateString("""
+		<div>
+			<div>name: {{ name }}</div>
+			<div>catchPhrase: {{ catchPhrase }}</div>
+			<div>bs: {{ bs }}</div>
+		</div>
+	""")
 
-	@staticmethod
-	def smores_template():
-		return """
-			<div>
-				Company
-				<div>name: {{ 'name' | get_data }}</div>
-				<div>catchPhrase: {{ 'catchPhrase' | get_data }}</div>
-				<div>bs: {{ 'bs' | get_data }}</div>
-			</div>
-			"""
-
+class Dog(Schema):
+	name = fields.String()
+	_default_template = TemplateString("""
+		Name: {{ name }}
+	""")
 
 class User(Schema):
 	id = fields.Integer()
@@ -67,80 +58,32 @@ class User(Schema):
 	phone = fields.String()
 	website = fields.String()
 	company = fields.Nested(Company)
-
-	@staticmethod
-	def smores_template():
-		return """
-			<div>
-				{{ 'id' | get_data }}
-				{{ 'name' | get_data }} 
-				{{ 'email' | get_data }} 
-				{{ 'address' | get_data }} 
-				{{ 'phone' | get_data }} 
-				{{ 'website' | get_data }} 
-				{{ 'company.name' | get_data }} 
-			</div>
-			"""
+	dogs = fields.Nested(Dog, many=True)
+	# _default_template = TemplateFile('user.html')
+	_default_template = TemplateString("""
+		<div>
+		    id: {{ id }}
+		    name: {{ name }}
+		    address: {{ address }}
+		    company: {{company}}
+		    dogs: {{ dogs }}
+		</div>
+	""")
 
 
 template = """
 	<div>
-		<div>Dear {{ 'user.name' | get_data }}:</div>
+		<div>Dear {user.name}:</div>
 		<p>
 			Here's all the information we have about you!
-			
-			{{ 'user' | get_data }}
+
+			{user}
 		</p>
 		<p>Sincerely,</p>
-		<p>{{ 'company.name' | get_data }} - {{ 'company.catchPhrase' | get_data }}</p>
-		<em>{{ 'company.bs' | get_data }}</em>
+		<p>{company.name} - {company.catchPhrase}</p>
+		<em>{company.bs}</em>
 	</div>
 """
 
-# simply provide the data, base schema and template string
+
 print render(SAMPLE_DATA[0], User, template)
-
-# outputs:
-"""
-	<div>
-		<div>Dear Leanne Graham:</div>
-		<p>
-			Here's all the information we have about you!
-			
-			
-			<div>
-				this is from the user schema
-				1
-				Leanne Graham 
-				Sincere@april.biz 
-				
-			<div>
-				Address
-				<div>street: Kulas Light</div>
-				<div>suite: Apt. 556</div>
-				<div>city: Gwenborough</div>
-				<div>zipcode: 92998-3874</div>
-				<div>
-					
-			<ul>
-				Coordinates
-				<li>lat: -37.3159</li>
-				<li>lng: 81.1496</li>
-			</ul>
-			
-				</div>
-			</div>
-			 
-				1-770-736-8031 x56442 
-				hildegard.org 
-				Romaguera-Crona 
-			</div>
-			
-		</p>
-		
-		<p>Sincerely,</p>
-		<p>Romaguera-Crona - Multi-layered client-server neural-net</p>
-		<em>harness real-time e-markets</em>
-		
-	</div>
-"""

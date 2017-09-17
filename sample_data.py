@@ -20,7 +20,13 @@ SAMPLE_DATA = [
       "name": "Romaguera-Crona",
       "catchPhrase": "Multi-layered client-server neural-net",
       "bs": "harness real-time e-markets"
-    }
+    },
+    "dogs": [
+      {"name": "Rufus"},
+      {"name": "Snoopy"},
+      {"name": "Scratch"},
+      {"name": "Spot"},
+    ]
   },
   {
     "id": 2,
