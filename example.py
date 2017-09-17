@@ -61,6 +61,10 @@ class User(Schema):
 	dogs = fields.Nested(Dog, many=True)
 	# _default_template = TemplateFile('user.html')
 	_default_template = TemplateFile('templates/user.html')
+	basic = TemplateString("""
+		<p>Name: {{name}}</p>
+		<p>Email: {{email}}</p>
+	""")
 
 template = """
 <h1>Smores</h1>
@@ -71,6 +75,12 @@ template = """
 	<p>{user.address.street}</p>
 	<p>Users can optionally specify the 'root' name, in this case 'user'.  This returns the same result.</p>
 	<p>{address.street}</p>
+</section>
+
+<section>
+	<h4>Provide templates as attributes</h4>
+	<p>Beyond _default_template, you can provide templates exposed as attributes:</p>
+	<p>{user.basic}</p>
 </section>
 
 <section>

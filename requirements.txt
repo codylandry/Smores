@@ -1,4 +1,6 @@
+beautifulsoup4==4.6.0
 Jinja2==2.9.6
 MarkupSafe==1.0
 marshmallow==2.13.6
 pydash==4.2.1
+pyparsing==2.2.0
