@@ -30,9 +30,8 @@ class TemplateString(fields.Field):
 	def _serialize(self, value, attr, obj):
 		schema = self.root.__class__
 		template_fields = [k for k, v in self.root.declared_fields.items() if isinstance(v, TemplateString)]
-
 		base_name = schema.__name__.lower()
-		base_object = schema(exclude=template_fields).dump(obj).data
+		base_object = schema(exclude=template_fields).dump(obj).data # TODO - cache this
 		context_dict = {base_name: base_object}
 		context_dict.update(base_object)
 		template = env.from_string(self.template_string)
