@@ -13,15 +13,29 @@ def _combine_path(tokens):
 	nodes = map(''.join, tokens)
 	path = '.'.join(nodes)
 	return path
-	# return " '{path}' | smores_data ".format(path=path)
 
 def _get_jinja_tag(tokens):
 	return ''.join(tokens[0])
 
 def _adjust_indexes(tokens):
+	# make indexes '1-based'
 	return str(int(tokens[0]) - 1)
 
 def to_jinja_template(template_string):
+	"""
+	This function allows us to expose a 'slightly' less intimidating syntax to the user.  It accepts a 'user-generated'
+	template with variables referenced using the following syntax:
+
+		{root.attribute:list_index.deeper_attribute}
+
+	This gets parsed and converted to generate a valid jinja template tag:
+
+		{{root.attribute[list_index].deeper_attribute}}
+
+	:param template_string: a user-generated template
+	:return: a jinja version of the template
+	"""
+
 	ParserElement.setDefaultWhitespaceChars('')
 	START = Literal('{').setParseAction(lambda: '{{')
 	END = Literal('}').setParseAction(lambda: '}}')
