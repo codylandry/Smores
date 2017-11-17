@@ -124,6 +124,12 @@ from parser import ATTR, delimitedList
 
 
 def autocomplete(base_schema, tag):
+	"""
+	Gets the available options for a given tag fragment
+	:param base_schema: The schema the template was written for
+	:param tag: a tag fragment ex: user.addresses
+	:return:
+	"""
 	attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
 	attrs = attrs.parseString(tag)
 
