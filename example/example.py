@@ -1,7 +1,5 @@
 from sample_data import SAMPLE_DATA
-import schemas
-from marshmallow import Schema
-from smores import render, autocomplete
+from schemas import smores
 
 user_created_template = """
 <h1>Smores</h1>
@@ -53,9 +51,13 @@ user_created_template = """
 <h3>Note: Some of these limitations only exists because we aren't exposing bracket notation for array indexes to users. If we use bracket notation and "{{'{{'}} {{'}}'}}", we can effectively give the user the power of jinja outright.</h3>
 """
 
-print render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), schemas, user_created_template)
+test = """
+{user.dogs}
+"""
 
-# print autocomplete(schemas, 'address.geo')
+print smores.render(dict(user=SAMPLE_DATA[0]), test)
+
+# print smores.tag_autocomplete('address')
 
 # outputs ->
 """
