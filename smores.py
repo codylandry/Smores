@@ -118,3 +118,29 @@ def render(data, schema, template_string):
 	raw = template.render(**context_dict)
 	soup = bs(raw, "html.parser")
 	return soup.prettify()
+
+
+from parser import ATTR, delimitedList
+
+
+def autocomplete(base_schema, tag):
+	attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
+	attrs = attrs.parseString(tag)
+
+	current_node = base_schema()
+	for attr in attrs:
+		if attr.lower() == current_node.__class__.__name__.lower():
+			continue
+		try:
+			node = current_node.declared_fields[attr]
+			if isinstance(node, fields.Nested):
+				current_node = node.schema
+			else:
+				current_node = node
+		except:
+			continue
+
+	if isinstance(current_node, (Schema,)):
+		return current_node.declared_fields.keys()
+	else:
+		return []

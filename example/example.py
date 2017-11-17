@@ -1,6 +1,6 @@
 from sample_data import SAMPLE_DATA
 from schemas import User
-from smores import render
+from smores import render, autocomplete
 
 user_created_template = """
 <h1>Smores</h1>
@@ -52,9 +52,8 @@ user_created_template = """
 <h3>Note: Some of these limitations only exists because we aren't exposing bracket notation for array indexes to users. If we use bracket notation and "{{'{{'}} {{'}}'}}", we can effectively give the user the power of jinja outright.</h3>
 """
 
-
 print render(SAMPLE_DATA[0], User, user_created_template)
-
+print autocomplete(User, 'user.dogs:2')
 
 # outputs ->
 """
