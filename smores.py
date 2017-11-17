@@ -91,7 +91,12 @@ class TemplateFile(TemplateString):
 		super(TemplateFile, self).__init__(template_string, *args, **kwargs)
 
 
-def render(data, schema, template_string):
+def module_schemas(mod):
+	module_exports = mod.__dict__.values()
+	module_classes = [s for s in module_exports if inspect.isclass(s)]
+	return [s for s in module_classes if issubclass(s, (Schema, ))]
+
+def render(data, schemas_module, template_string):
 	"""
 	Recursively populates the 'template_string' with data gathered from dumping 'data' through the Marshmallow 'schema'.
 	Variables are evaluated and will return the '_default_template' if one exists.  Prettifies end result.
@@ -109,10 +114,15 @@ def render(data, schema, template_string):
 
 	# create context for top-level template rendering
 	# allows for {user.address} AND {address}
-	base_name = schema.__name__.lower()
-	base_object = schema().dump(data).data
-	context_dict = {base_name: base_object}
-	context_dict.update(base_object)
+
+	schemas = module_schemas(schemas_module)
+
+	get_schema = lambda k: next((s for s in schemas if s.__name__.lower() == k.lower()), None)
+	context_dict = {}
+	for k, v in data.items():
+		schema = get_schema(k)
+		if schema:
+			context_dict[k] = schema().dump(v).data
 
 	# render and prettify output
 	raw = template.render(**context_dict)
@@ -123,17 +133,25 @@ def render(data, schema, template_string):
 from parser import ATTR, delimitedList
 
 
-def autocomplete(base_schema, tag):
+def autocomplete(schemas_module, tag):
 	"""
 	Gets the available options for a given tag fragment
 	:param base_schema: The schema the template was written for
 	:param tag: a tag fragment ex: user.addresses
 	:return:
 	"""
+	schemas = module_schemas(schemas_module)
 	attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
 	attrs = attrs.parseString(tag)
 
-	current_node = base_schema()
+	if tag == '':
+		return [s.__name__ for s in schemas]
+
+	root_schema = next((s for s in schemas if s.__name__.lower() == attrs[0].lower()), None)
+	if root_schema:
+		current_node = root_schema()
+	else:
+		return []
 	for attr in attrs:
 		if attr.lower() == current_node.__class__.__name__.lower():
 			continue

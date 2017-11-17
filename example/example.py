@@ -1,16 +1,17 @@
 from sample_data import SAMPLE_DATA
-from schemas import User
+import schemas
+from marshmallow import Schema
 from smores import render, autocomplete
 
 user_created_template = """
 <h1>Smores</h1>
-
+-------------------------
+{company.dog}
+-------------------------
 <section>
 	<h4>Data is accessed by the user using the following syntax</h4>
 	<p>Example:</p>
 	<p>{user.address.street}</p>
-	<p>Users can optionally specify the 'root' name, in this case 'user'.  This returns the same result.</p>
-	<p>{address.street}</p>
 </section>
 
 <section>
@@ -30,11 +31,11 @@ user_created_template = """
 <section>
 	<h4>Arrays</h4>
 	<p>Array items are specified using ':index'. For example:</p>
-	<p>{dogs:1}</p>
+	<p>{user.dogs:1}</p>
 	<p>Just as with any other variable, if the array specifies a schema, the _default_template for that schema will be rendered.  If you specify a field, that field result will be rendered.</p>
-	<p>{dogs:2.name}</p>
+	<p>{user.dogs:2.name}</p>
 	<p>If you specify the list with no index, the _default_template will be returned for each item in the list</p>
-	<p>{dogs}</p>
+	<p>{user.dogs}</p>
 </section>
 
 <section>
@@ -52,8 +53,9 @@ user_created_template = """
 <h3>Note: Some of these limitations only exists because we aren't exposing bracket notation for array indexes to users. If we use bracket notation and "{{'{{'}} {{'}}'}}", we can effectively give the user the power of jinja outright.</h3>
 """
 
-print render(SAMPLE_DATA[0], User, user_created_template)
-print autocomplete(User, 'user.dogs:2')
+print render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), schemas, user_created_template)
+
+# print autocomplete(schemas, 'address.geo')
 
 # outputs ->
 """
