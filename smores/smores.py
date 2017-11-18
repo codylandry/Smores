@@ -100,13 +100,13 @@ class Smores(object):
 		_DEFAULT_TEMPLATE = self._DEFAULT_TEMPLATE
 		fallback_value = self.fallback_value
 		def process(var):
-			if type(var) == list:
+			if isinstance(var, (list, )):
 				# if var is a list return the _default_template for each item
 				try:
 					return "".join([v[_DEFAULT_TEMPLATE] for v in var])
 				except:
 					return fallback_value
-			if type(var) == dict:
+			if isinstance(var, (dict, )):
 				# if var is a dict, then we must be returning a single schema, so try to get the _default_template
 				try:
 					return var[_DEFAULT_TEMPLATE]
