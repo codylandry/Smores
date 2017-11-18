@@ -1,5 +1,5 @@
-from sample_data import SAMPLE_DATA
-from schemas import smores
+from sample_data import SAMPLE_DATA, EXTRA_DATA
+from schemas import smores, fields, Schema, User
 
 user_created_template = """
 <h1>Smores</h1>
@@ -52,12 +52,25 @@ user_created_template = """
 """
 
 test = """
-{user.dogs}
+{user.address.geo}
+{event.tech.name}
 """
-
-print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template)
-
+#{{event.tech}
+#{{event.tag_to}
+#{{event.tag_from}
+# print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template)
+#
 # print smores.tag_autocomplete('address')
+
+
+
+@smores.schema
+class Event(Schema):
+	tech = fields.Nested(User)
+	tag_to = fields.String()
+	tag_from = fields.String()
+
+print smores.render(dict(user=SAMPLE_DATA[0], event=EXTRA_DATA), test)
 
 # outputs ->
 """
