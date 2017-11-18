@@ -1,9 +1,6 @@
 from marshmallow import Schema, fields
 from parser import to_jinja_template
-from jinja2 import Template, Environment, contextfilter
-from bs4 import BeautifulSoup as bs
-import inspect
-import os
+from jinja2 import Environment
 from parser import ATTR, delimitedList
 
 
@@ -202,6 +199,5 @@ class Smores(object):
 
 		# render and prettify output
 		raw = template.render(**context_dict)
-		soup = bs(raw, "html.parser")
-		return soup.prettify()
+		return raw
 

@@ -1,4 +1,4 @@
-SAMPLE_DATA = [
+users = [
   {
     "id": 1,
     "name": "Leanne Graham",
@@ -236,11 +236,3 @@ SAMPLE_DATA = [
     }
   }
 ]
-
-EXTRA_DATA = {
-  "tech": {
-    "name": "John Biggs",
-  },
-  "tag_to": "some tag i added",
-  "tag_from": "some tag i removed"
-}
