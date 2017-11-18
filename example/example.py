@@ -4,7 +4,7 @@ from schemas import smores
 user_created_template = """
 <h1>Smores</h1>
 -------------------------
-{company.dog}
+{user.address.geo.lat}
 -------------------------
 <section>
 	<h4>Data is accessed by the user using the following syntax</h4>
@@ -55,7 +55,7 @@ test = """
 {user.dogs}
 """
 
-print smores.render(dict(user=SAMPLE_DATA[0]), test)
+print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template)
 
 # print smores.tag_autocomplete('address')
 

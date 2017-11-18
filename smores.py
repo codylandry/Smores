@@ -7,6 +7,58 @@ import os
 from parser import ATTR, delimitedList
 
 
+class TemplateString(fields.Field):
+	"""
+	This field takes a jinja template as an argument and returns the rendered the template during serialization
+	"""
+	# TemplateStrings never map to a particular value on the obj, but rather, the whole object
+	_CHECK_ATTRIBUTE = False
+
+	def __init__(self, template_string, env=None, *args, **kwargs):
+		super(TemplateString, self).__init__(*args, **kwargs)
+
+		# the template string to be rendered
+		self.template_string = template_string
+
+		# TemplateStrings do not get 'loaded' by marshmallow
+		self.dump_only = True
+		self.env = env
+
+	def _serialize(self, _, __, obj):
+		"""
+		Returns rendered jinja template using obj.
+		:param obj: the unserialized obj
+		:return: rendered template text
+		"""
+		# get schema class
+		schema = self.root.__class__
+		base_name = schema.__name__.lower()
+
+		# get names of all TemplateString/TemplateFile fields for the schema
+		template_fields = [k for k, v in self.root.declared_fields.items() if isinstance(v, TemplateString)]
+
+		# serialize remaining fields of schema for template context
+		context = schema(exclude=template_fields).dump(obj).data  # TODO - cache this
+
+		# return rendered template
+		template = self.env.from_string(self.template_string)
+		return template.render(**context)
+
+	def get_value(self, attr, obj, accessor=None, default=''):
+		return obj
+
+class TemplateFile(TemplateString):
+	"""
+	Allows ability to store templates in files
+	"""
+
+	def __init__(self, template_path, env=None, *args, **kwargs):
+		# grab the template file
+		with open(template_path, 'rb') as template_file:
+			template_string = template_file.read()
+		# pass it on to TemplateString
+		super(TemplateFile, self).__init__(template_string, env=env, *args, **kwargs)
+
 class Smores(object):
 	schemas = []
 
@@ -45,8 +97,7 @@ class Smores(object):
 			return var
 		return process
 
-	@classmethod
-	def schema(cls, schema):
+	def schema(self, schema):
 		Smores.schemas.append(schema)
 		return schema
 
@@ -86,70 +137,11 @@ class Smores(object):
 		else:
 			return []
 
-	@property
-	def TemplateString(smores_instance):
-		env = smores_instance.env
-		class TemplateString(fields.Field):
-			"""
-			This field takes a jinja template as an argument and returns the rendered the template during serialization
-			"""
-			# TemplateStrings never map to a particular value on the obj, but rather, the whole object
-			_CHECK_ATTRIBUTE = False
+	def TemplateString(self, *args, **kwargs):
+		return TemplateString(*args, env=self.env, **kwargs)
 
-			def __init__(self, template_string, *args, **kwargs):
-				super(TemplateString, self).__init__(*args, **kwargs)
-
-				# the template string to be rendered
-				self.template_string = template_string
-
-				# TemplateStrings do not get 'loaded' by marshmallow
-				self.dump_only = True
-
-			def _serialize(self, _, __, obj):
-				"""
-				Returns rendered jinja template using obj.
-				:param obj: the unserialized obj
-				:return: rendered template text
-				"""
-				# get schema class
-				schema = self.root.__class__
-				base_name = schema.__name__.lower()
-
-				# get names of all TemplateString/TemplateFile fields for the schema
-				template_fields = [k for k, v in self.root.declared_fields.items() if isinstance(v, TemplateString)]
-
-				# serialize remaining fields of schema for template context
-				base_object = schema(exclude=template_fields).dump(obj).data  # TODO - cache this
-
-				# build context with both schema root and fields available
-				# allows for {user.address} AND {address}
-				context_dict = {base_name: base_object}
-				# context_dict.update(base_object)
-
-				# return rendered template
-				template = env.from_string(self.template_string)
-				return template.render(**context_dict)
-
-			def get_value(self, attr, obj, accessor=None, default=''):
-				return obj
-
-		return TemplateString
-
-	@property
-	def TemplateFile(smores_instance):
-		class TemplateFile(smores_instance.TemplateString):
-			"""
-			Allows ability to store templates in files
-			"""
-
-			def __init__(self, template_path, *args, **kwargs):
-				# grab the template file
-				with open(template_path, 'rb') as template_file:
-					template_string = template_file.read()
-				# pass it on to TemplateString
-				super(TemplateFile, self).__init__(template_string, *args, **kwargs)
-
-		return TemplateFile
+	def TemplateFile(self, *args, **kwargs):
+		return TemplateFile(*args, env=self.env, **kwargs)
 
 	def render(self, data, template_string):
 		"""

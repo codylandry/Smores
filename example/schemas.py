@@ -4,7 +4,7 @@ from smores import Smores
 smores = Smores()
 
 # EXAMPLE Marshmallow Schemas
-@Smores.schema
+@smores.schema
 class Coordinates(Schema):
 	lat = fields.Decimal()
 	lng = fields.Decimal()
@@ -14,7 +14,7 @@ class Coordinates(Schema):
 		</div>
 	""")
 
-@Smores.schema
+@smores.schema
 class Address(Schema):
 	street = fields.String()
 	suite = fields.String()
@@ -33,7 +33,7 @@ class Address(Schema):
 		</div>
 	""")
 
-@Smores.schema
+@smores.schema
 class Company(Schema):
 	name = fields.String()
 	catchPhrase = fields.String()
@@ -46,14 +46,14 @@ class Company(Schema):
 		</div>
 	""")
 
-@Smores.schema
+@smores.schema
 class Dog(Schema):
 	name = fields.String()
 	_default_template = smores.TemplateString("""
 		Name: {{ name }}
 	""")
 
-@Smores.schema
+@smores.schema
 class User(Schema):
 	id = fields.Integer()
 	name = fields.String()
