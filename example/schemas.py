@@ -23,15 +23,15 @@ class Address(Schema):
 	geo = fields.Nested(Coordinates)
 	_default_template = smores.TemplateString("""
 		<div>
-			<div>street: {{ street }}</div>
-			<div>suite: {{ suite }}</div>
-			<div>city: {{ city }}</div>
-			<div>zipcode: {{ zipcode }}</div>
+			<div>street: {street}</div>
+			<div>suite: {suite}</div>
+			<div>city: {city}</div>
+			<div>zipcode: {zipcode}</div>
 			<div>
-				{{ geo }}
+				{geo.lat} {geo.lng}
 			</div>
 		</div>
-	""")
+	""", use_parser=True)
 
 @smores.schema
 class Company(Schema):

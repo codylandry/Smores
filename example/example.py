@@ -4,8 +4,11 @@ from schemas import smores, fields, Schema, User
 user_created_template = """
 <h1>Smores</h1>
 -------------------------
-testing user sub templates
+-------testing user sub templates
 {my user template}
+
+-------testing using the parser in backend templates (which support normal jinja syntax by default)
+{user.address}
 -------------------------
 <section>
 	<h4>Data is accessed by the user using the following syntax</h4>
