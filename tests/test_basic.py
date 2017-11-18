@@ -1,9 +1,7 @@
 from smores import Smores
 from smores.parser import to_jinja_template
 from sample_data import users, register_schemas
-from marshmallow import fields, Schema
 import pytest
-
 
 @pytest.fixture(scope='module')
 def smores_instance():
@@ -36,7 +34,6 @@ default_template_cases = [
 def test_render_default_template(smores_instance, input, output):
 	result = smores_instance.render(dict(user=users[0]), input)
 	assert result == output
-
 
 # ------------------------------------------------------------------------------
 non_default_template_strings = [
