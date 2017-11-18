@@ -49,6 +49,7 @@ class TemplateString(fields.Field):
 	def get_value(self, attr, obj, accessor=None, default=''):
 		return obj
 
+
 class TemplateFile(TemplateString):
 	"""
 	Allows ability to store templates in files
@@ -61,18 +62,24 @@ class TemplateFile(TemplateString):
 		# pass it on to TemplateString
 		super(TemplateFile, self).__init__(template_string, env=env, use_parser=use_parser, *args, **kwargs)
 
+
 class SmoresEnvironment(Environment):
+	def __init__(self, fallback_value='', *args, **kwargs):
+		super(SmoresEnvironment, self).__init__(*args, **kwargs)
+		self.fallback_value = fallback_value
+
 	def getattr(self, obj, attribute):
 		try:
 			return super(SmoresEnvironment, self).getattr(obj, attribute)
 		except:
-			return ''
+			return self.fallback_value
 
 	def getitem(self, obj, attribute):
 		try:
 			return super(SmoresEnvironment, self).getitem(obj, attribute)
 		except:
-			return ''
+			return self.fallback_value
+
 
 class Smores(object):
 	schemas = []
@@ -82,7 +89,7 @@ class Smores(object):
 		self.fallback_value = fallback_value
 
 		# This jinja environment sets up a function to process variables into either serialized form or template
-		self.env = SmoresEnvironment(finalize=self.process_vars())
+		self.env = SmoresEnvironment(fallback_value=fallback_value, finalize=self.process_vars())
 		self.user_templates = {}
 
 	def process_vars(self):

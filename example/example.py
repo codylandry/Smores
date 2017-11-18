@@ -1,11 +1,16 @@
 from sample_data import SAMPLE_DATA, EXTRA_DATA
 from schemas import smores, fields, Schema, User
+from bs4 import BeautifulSoup
+import re
 
 user_created_template = """
 <h1>Smores</h1>
 -------------------------
 -------testing user sub templates
 {my user template}
+
+-------testing fallback value
+{AASDFASDFASDF.asdfasdfasdf}
 
 -------testing using the parser in backend templates (which support normal jinja syntax by default)
 {user.address}
@@ -55,25 +60,80 @@ user_created_template = """
 <h3>Note: Some of these limitations only exists because we aren't exposing bracket notation for array indexes to users. If we use bracket notation and "{{'{{'}} {{'}}'}}", we can effectively give the user the power of jinja outright.</h3>
 """
 
-user_sub_templates = [
-	('my user template', "{user.name}: {user.id}")
-]
+# user_sub_templates = [
+# 	('my user template', "{user.name}: {user.id}")
+# ]
+#
+# print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template, sub_templates=user_sub_templates)
+#
+# print smores.tag_autocomplete('address')
+#
+#
+# # showing how we can create an impromptu schema and provide extra data for special situations
+# test = """
+# {user.address.geo}
+# {event.tech.name}
+# {event.tag_from}
+# """
+# @smores.schema
+# class Event(Schema):
+# 	tech = fields.Nested(User)
+# 	tag_to = fields.String()
+# 	tag_from = fields.String()
+#
+# print smores.render(dict(user=SAMPLE_DATA[0], event=EXTRA_DATA), test)
 
-print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template, sub_templates=user_sub_templates)
 
-print smores.tag_autocomplete('address')
+iterable_tags = {
+	"{doglist.name}": "{% for doglist in user.dogs %}"
+}
 
+test2 = """
 
-# showing how we can create an impromptu schema and provide extra data for special situations
-test = """
-{user.address.geo}
-{event.tech.name}
-{event.tag_from}
+<table>
+	<thead>
+		<tr>
+			<th>test</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr> 
+			<td>{doglist.name}</td>
+			<td> this should repeat</td>
+		</tr>
+		<tr>
+			<td>{doglist.name}</td>
+		</tr>
+		<tr>
+			<td>{user.name}</td>		
+		</tr>
+	</tbody>
+</table>
+
 """
-@smores.schema
-class Event(Schema):
-	tech = fields.Nested(User)
-	tag_to = fields.String()
-	tag_from = fields.String()
 
-print smores.render(dict(user=SAMPLE_DATA[0], event=EXTRA_DATA), test)
+
+def loop_table_rows(template_string):
+	soup = BeautifulSoup(template_string, 'html.parser')
+	table = soup.find('table')
+
+	for tag, for_statement in iterable_tags.items():
+		td = table.find('td', string=tag)
+		rows = []
+		if td:
+			tr = td.parent
+			tr.insert_before(for_statement)
+			while True:
+				try:
+					found = tr.find_next_sibling().find('td', string=tag).parent
+					if found:
+						rows.append(found)
+						tr = found
+				except Exception as e:
+					break
+			tr.insert_after("{% endfor %}")
+	return soup.prettify()
+
+
+print loop_table_rows(test2)
+print smores.render(dict(user=SAMPLE_DATA[0]), loop_table_rows(test2))

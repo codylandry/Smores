@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 from smores import Smores
 
-smores = Smores()
+smores = Smores(fallback_value='!!!INVALID TAG!!!')
 
 # EXAMPLE Marshmallow Schemas
 @smores.schema
