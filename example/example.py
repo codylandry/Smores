@@ -51,19 +51,19 @@ user_created_template = """
 <h3>Note: Some of these limitations only exists because we aren't exposing bracket notation for array indexes to users. If we use bracket notation and "{{'{{'}} {{'}}'}}", we can effectively give the user the power of jinja outright.</h3>
 """
 
+
+
+print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template)
+
+print smores.tag_autocomplete('address')
+
+
+# showing how we can create an impromptu schema and provide extra data for special situations
 test = """
 {user.address.geo}
 {event.tech.name}
+{event.tag_from}
 """
-#{{event.tech}
-#{{event.tag_to}
-#{{event.tag_from}
-# print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template)
-#
-# print smores.tag_autocomplete('address')
-
-
-
 @smores.schema
 class Event(Schema):
 	tech = fields.Nested(User)
@@ -71,68 +71,3 @@ class Event(Schema):
 	tag_from = fields.String()
 
 print smores.render(dict(user=SAMPLE_DATA[0], event=EXTRA_DATA), test)
-
-# outputs ->
-"""
-<div>
- <div>
-  Dear Leanne Graham:
- </div>
- <p>
-  Here's all the information we have about you!
-  <div>
-   id: 1
-		    name: Leanne Graham
-		    address:
-   <div>
-    <div>
-     street: Kulas Light
-    </div>
-    <div>
-     suite: Apt. 556
-    </div>
-    <div>
-     city: Gwenborough
-    </div>
-    <div>
-     zipcode: 92998-3874
-    </div>
-    <div>
-     <div>
-      -37.3159, 81.1496
-     </div>
-    </div>
-   </div>
-   company:
-   <div>
-    <div>
-     name: Romaguera-Crona
-    </div>
-    <div>
-     catchPhrase: Multi-layered client-server neural-net
-    </div>
-    <div>
-     bs: harness real-time e-markets
-    </div>
-   </div>
-   dogs: 
-		Name: Rufus
-	
-		Name: Snoopy
-	
-		Name: Scratch
-	
-		Name: Spot
-  </div>
- </p>
- <p>
-  Sincerely,
- </p>
- <p>
-  Romaguera-Crona -
- </p>
- <em>
-  harness real-time e-markets
- </em>
-</div>
-"""
