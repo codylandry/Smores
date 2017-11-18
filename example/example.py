@@ -4,7 +4,8 @@ from schemas import smores, fields, Schema, User
 user_created_template = """
 <h1>Smores</h1>
 -------------------------
-{user.address.geo.lat}
+testing user sub templates
+{my user template}
 -------------------------
 <section>
 	<h4>Data is accessed by the user using the following syntax</h4>
@@ -51,9 +52,11 @@ user_created_template = """
 <h3>Note: Some of these limitations only exists because we aren't exposing bracket notation for array indexes to users. If we use bracket notation and "{{'{{'}} {{'}}'}}", we can effectively give the user the power of jinja outright.</h3>
 """
 
+user_sub_templates = [
+	('my user template', "{user.name}: {user.id}")
+]
 
-
-print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template)
+print smores.render(dict(user=SAMPLE_DATA[0], company=SAMPLE_DATA[0]['company']), user_created_template, sub_templates=user_sub_templates)
 
 print smores.tag_autocomplete('address')
 
