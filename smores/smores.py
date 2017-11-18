@@ -79,8 +79,6 @@ class SmoresEnvironment(Environment):
 
 
 class Smores(object):
-	schemas = []
-
 	def __init__(self, default_template_name='_default_template', fallback_value=''):
 		self._DEFAULT_TEMPLATE = default_template_name
 		self.fallback_value = fallback_value
@@ -88,6 +86,7 @@ class Smores(object):
 		# This jinja environment sets up a function to process variables into either serialized form or template
 		self.env = SmoresEnvironment(fallback_value=fallback_value, finalize=self.process_vars())
 		self.user_templates = {}
+		self.schemas = []
 
 	def process_vars(self):
 		"""
@@ -118,7 +117,7 @@ class Smores(object):
 		return process
 
 	def schema(self, schema):
-		Smores.schemas.append(schema)
+		self.schemas.append(schema)
 		return schema
 
 	def tag_autocomplete(self, tag):
@@ -133,9 +132,9 @@ class Smores(object):
 		attrs = attrs.parseString(tag)
 
 		if tag == '':
-			return [s.__name__ for s in Smores.schemas]
+			return [s.__name__ for s in self.schemas]
 
-		root_schema = next((s for s in Smores.schemas if s.__name__.lower() == attrs[0].lower()), None)
+		root_schema = next((s for s in self.schemas if s.__name__.lower() == attrs[0].lower()), None)
 		if root_schema:
 			current_node = root_schema()
 		else:
@@ -174,11 +173,13 @@ class Smores(object):
 		:return: rendered template
 		"""
 
+		assert isinstance(template_string, (basestring, )), 'template_string expected type string got %s' % type(template_string)
+
 		# substitute sub template tag names with
 		for tag_name, tag_template_str in sub_templates or []:
 			template_string = template_string.replace("{%s}" % tag_name, tag_template_str)
 
-		get_schema = lambda k: next((s for s in Smores.schemas if s.__name__.lower() == k.lower()), None)
+		get_schema = lambda k: next((s for s in self.schemas if s.__name__.lower() == k.lower()), None)
 
 		# parse end-user template (converts {user.addresses:3.name} to {{user.addresses[2].name}})
 		# gives a 'slightly' less intimidating language syntax for the user to understand.
