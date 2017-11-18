@@ -54,12 +54,12 @@ class TemplateFile(TemplateString):
 	Allows ability to store templates in files
 	"""
 
-	def __init__(self, template_path, env=None, *args, **kwargs):
+	def __init__(self, template_path, env=None, use_parser=False, *args, **kwargs):
 		# grab the template file
 		with open(template_path, 'rb') as template_file:
 			template_string = template_file.read()
 		# pass it on to TemplateString
-		super(TemplateFile, self).__init__(template_string, env=env, *args, **kwargs)
+		super(TemplateFile, self).__init__(template_string, env=env, use_parser=use_parser, *args, **kwargs)
 
 class SmoresEnvironment(Environment):
 	def getattr(self, obj, attribute):
