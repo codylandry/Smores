@@ -120,46 +120,86 @@ class Smores(object):
 		self.schemas.append(schema)
 		return schema
 
-	def tag_autocomplete(self, tag):
+	def tag_autocomplete(self, fragment, only=None, exclude=None):
 		"""
-			Gets the available options for a given tag fragment
-			:param base_schema: The schema the template was written for
-			:param tag: a tag fragment ex: user.addresses
-			:return:
-			"""
-		tag = tag.strip()
+		Gets the available options for a given tag fragment
+		:param base_schema: The schema the template was written for
+		:param fragment: a tag fragment ex: user.addresses
+		:param only: a list of schemas that should be included
+		:param exclude: a list of schemas that should be excluded
+		:return: a list of 'tab completion' results based on the tag fragment
+		"""
+		fragment = fragment.strip()
 
-		if tag == '':
-			return [s.__name__.lower() for s in self.schemas]
+		# include/exclude root schemas from results
+		allowed_root_schemas = self.schemas[:]
+		if only:
+			only = [s.lower() for s in only]
+			allowed_root_schemas = [s for s in allowed_root_schemas if s.__name__.lower() in only]
 
+		if exclude:
+			exclude = [s.lower() for s in exclude]
+			allowed_root_schemas = [s for s in allowed_root_schemas if s.__name__.lower() not in exclude]
+
+		# return allowed schemas if fragment is blank
+		if not fragment:
+			return [s.__name__.lower() for s in allowed_root_schemas]
+
+		# parse fragment into tokens
 		attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
-		attrs = attrs.parseString(tag)
+		attrs = attrs.parseString(fragment)
 
-		root_schema = next((s for s in self.schemas if s.__name__.lower() == attrs[0].lower()), None)
+		# attempt to get the root schema
+		root_schema = next((s for s in allowed_root_schemas if s.__name__.lower() == attrs[0].lower()), None)
 		if root_schema:
 			current_node = root_schema()
 
+		# otherwise get any schema starting with fragment
 		elif len(attrs) == 1:
-			return [s.__name__.lower() for s in self.schemas if s.__name__.lower().startswith(attrs[0].lower())]
+			return [s.__name__.lower() for s in allowed_root_schemas
+			        if s.__name__.lower().startswith(attrs[0].lower())]
 
-		for idx, attr in enumerate(attrs):
-			if attr.lower() == current_node.__class__.__name__.lower():
-				continue
-
-			if attr.lower() in map(lambda s: s.lower(), current_node.declared_fields.keys()):
-				node = current_node.declared_fields[attr]
-				if isinstance(node, fields.Nested):
-					current_node = node.schema
-				else:
-					current_node = node
-
-			elif idx == len(attrs) - 1:
-				return [f.lower() for f in current_node.declared_fields.keys() if f.lower().startswith(attr.lower())]
-
-		if isinstance(current_node, (Schema,)):
-			return current_node.declared_fields.keys()
+		# otherwise, it's an invalid fragment
 		else:
 			return []
+
+		get_fields = lambda n: map(lambda s: s.lower(), n.declared_fields.keys())
+		current_node_field_names = get_fields(current_node)
+		for idx, attr in enumerate(attrs[1:]):
+			is_last_attr = idx == len(attrs[1:]) - 1
+			current_node_field_names = get_fields(current_node)
+
+			# if valid attribute
+			if attr.lower() in current_node_field_names:
+				node = current_node.declared_fields[attr]
+
+				# if nested field, get the associated schema
+				if isinstance(node, fields.Nested):
+					current_node = node.schema
+
+					# if it's a many field and the last attr, return an option to index the array
+					if is_last_attr and node.many == True:
+						return [':1']
+
+					# otherwise update the field names
+					current_node_field_names = get_fields(current_node)
+				else:
+					current_node = None
+
+			# if attr is an array index, just continue
+			elif attr.startswith('['):
+				continue
+
+			# if the attr is only partially filled, return possible results
+			else:
+				current_node_field_names = [f for f in current_node_field_names if f.startswith(attr.lower())]
+
+
+		if isinstance(current_node, (Schema,)):
+			return current_node_field_names
+		else:
+			return []
+
 
 	def TemplateString(self, *args, **kwargs):
 		return TemplateString(*args, env=self.env, **kwargs)
