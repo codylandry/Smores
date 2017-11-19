@@ -128,28 +128,33 @@ class Smores(object):
 			:return:
 			"""
 		tag = tag.strip()
-		attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
-		attrs = attrs.parseString(tag)
 
 		if tag == '':
-			return [s.__name__ for s in self.schemas]
+			return [s.__name__.lower() for s in self.schemas]
+
+		attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
+		attrs = attrs.parseString(tag)
 
 		root_schema = next((s for s in self.schemas if s.__name__.lower() == attrs[0].lower()), None)
 		if root_schema:
 			current_node = root_schema()
-		else:
-			return []
-		for attr in attrs:
+
+		elif len(attrs) == 1:
+			return [s.__name__.lower() for s in self.schemas if s.__name__.lower().startswith(attrs[0].lower())]
+
+		for idx, attr in enumerate(attrs):
 			if attr.lower() == current_node.__class__.__name__.lower():
 				continue
-			try:
+
+			if attr.lower() in map(lambda s: s.lower(), current_node.declared_fields.keys()):
 				node = current_node.declared_fields[attr]
 				if isinstance(node, fields.Nested):
 					current_node = node.schema
 				else:
 					current_node = node
-			except:
-				continue
+
+			elif idx == len(attrs) - 1:
+				return [f.lower() for f in current_node.declared_fields.keys() if f.lower().startswith(attr.lower())]
 
 		if isinstance(current_node, (Schema,)):
 			return current_node.declared_fields.keys()
