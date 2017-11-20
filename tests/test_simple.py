@@ -1,6 +1,7 @@
 from smores import Smores, TagAutocompleteResponse
 from smores.parser import to_jinja_template
 from sample_data import users, register_schemas
+from create_db import User, db_session, select
 import pytest
 
 @pytest.fixture(scope='module')
@@ -32,34 +33,59 @@ default_template_cases = [
 ]
 
 @pytest.mark.parametrize("input, output", default_template_cases)
-def test_render_default_template(smores_instance, input, output):
+def test_render_default_template_with_dicts(smores_instance, input, output):
 	result = smores_instance.render(dict(user=users[0]), input)
 	assert result == output
 
+@pytest.mark.parametrize("input, output", default_template_cases)
+def test_render_default_template_with_models(smores_instance, input, output):
+	with db_session:
+		result = smores_instance.render(dict(user=User[1]), input)
+		assert result == output
+
 # ------------------------------------------------------------------------------
+non_default_template_strings = [
+	("{user.long_template}", "Leanne Graham--1-770-736-8031 x56442--Sincere@april.biz--hildegard.org--"),
+	("{user.dogs:1.with_greeting}", "Hi, this is my dog Rufus"),
+]
+
+@pytest.mark.parametrize("input, output", non_default_template_strings)
+def test_non_default_template_strings_with_dicts(smores_instance, input, output):
+	result = smores_instance.render(dict(user=users[0]), input)
+	assert result == output
+
 non_default_template_strings = [
 	("{user.long_template}", "Leanne Graham--1-770-736-8031 x56442--Sincere@april.biz--hildegard.org--"),
 	("{user.dogs:0.with_greeting}", "Hi, this is my dog Spot"),
 ]
 
 @pytest.mark.parametrize("input, output", non_default_template_strings)
-def test_non_default_template_strings(smores_instance, input, output):
-	result = smores_instance.render(dict(user=users[0]), input)
-	assert result == output
+def test_non_default_template_strings_with_models(smores_instance, input, output):
+	with db_session:
+		user = User[1]
+		user.dogs = user.dogs.sort_by(lambda d: d.name)
+		result = smores_instance.render(dict(user=user), input)
+		assert result == output
 
 # ------------------------------------------------------------------------------
-bad_input_cases = [
-	# bad data inputs
-	([], "{user}"),
-	("some string, should be a dict", "{user}"),
-	(1234, "{user}"),
+with db_session:
+	bad_input_cases = [
+		# bad data inputs
+		([], "{user}"),
+		("some string, should be a dict", "{user}"),
+		(1234, "{user}"),
 
-	# bad template string inputs
-	(dict(user=users[0]), 123),
-	(dict(user=users[0]), dict()),
-	(dict(user=users[0]), []),
-	(dict(user=users[0]), users[0]),
-]
+		# bad template string inputs
+		(dict(user=users[0]), 123),
+		(dict(user=users[0]), dict()),
+		(dict(user=users[0]), []),
+		(dict(user=users[0]), users[0]),
+		(dict(user=User[1]), 123),
+		(dict(user=User[1]), dict()),
+		(dict(user=User[1]), []),
+		(dict(user=User[1]), users[0]),
+
+	]
 @pytest.mark.parametrize("input", bad_input_cases)
 def test_bad_render_inputs(smores_instance, input):
 	data, template = input
