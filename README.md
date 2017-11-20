@@ -105,7 +105,7 @@ print smores.render(data, user_template)
 # <div>Leanne Graham</div>
 # <div>E: Sincere@april.biz</div>
 # <div>
-#     <div><a href="https://maps.google.com/?ll=-37.3159,81.1496">View Map</a></div>
+#     <div><a href="https://maps.google.com/?ll=36.065934,-79.791414">View Map</a></div>
 #     <div>Kulas Light -- Apt. 556</div>
 #     <div>Gwenborough, MD 92998-3874</div>
 # </div>
