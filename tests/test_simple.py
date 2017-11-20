@@ -51,6 +51,8 @@ non_default_template_strings = [
 
 @pytest.mark.parametrize("input, output", non_default_template_strings)
 def test_non_default_template_strings_with_dicts(smores_instance, input, output):
+	user = users[0]
+	user['dogs'] = sorted(user['dogs'], key=lambda d: d['name'])
 	result = smores_instance.render(dict(user=users[0]), input)
 	assert result == output
 

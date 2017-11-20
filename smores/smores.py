@@ -84,6 +84,12 @@ class SmoresEnvironment(Environment):
 
 class Smores(object):
 	def __init__(self, default_template_name='_default_template', fallback_value=''):
+		"""
+		Provides a method of defining a schema for string templates.  Presents a tag syntax
+		easy enough for end users to use.
+		:param default_template_name: The name you'd like to use for default schema templates
+		:param fallback_value: A string value you'd like to use when a tag can't be resolved.
+		"""
 		self._DEFAULT_TEMPLATE = default_template_name
 		self.fallback_value = fallback_value
 
@@ -121,6 +127,11 @@ class Smores(object):
 		return process
 
 	def schema(self, schema):
+		"""
+		A decorator that registers a marshmallow schema
+		:param schema:
+		:return:
+		"""
 		self.schemas.append(schema)
 		return schema
 

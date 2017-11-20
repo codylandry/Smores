@@ -3,3 +3,7 @@
 .idea
 .cache
 *.pyc
+.DS_Store
+.eggs/
+_dev.py
+smores.egg-info/
