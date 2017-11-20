@@ -12,10 +12,10 @@ def smores_instance():
 
 # ------------------------------------------------------------------------------
 parser_test_cases = [
-	("{user.name}", '{{user.name | default("")}}'),
-	("{user.dogs:1}", '{{user.dogs[0] | default("")}}'),
-	("{user.dogs:1.name}", '{{user.dogs[0].name | default("")}}'),
-	("{user.addresses:4.geo.lat}", '{{user.addresses[3].geo.lat | default("")}}'),
+	("{user.name}", "{{user.name | default('')}}"),
+	("{user.dogs:1}", "{{user.dogs[0] | default('')}}"),
+	("{user.dogs:1.name}", "{{user.dogs[0].name | default('')}}"),
+	("{user.addresses:4.geo.lat}", "{{user.addresses[3].geo.lat | default('')}}"),
 ]
 
 @pytest.mark.parametrize("input, output", parser_test_cases)
@@ -58,7 +58,7 @@ def test_non_default_template_strings_with_dicts(smores_instance, input, output)
 
 non_default_template_strings = [
 	("{user.long_template}", "Leanne Graham--1-770-736-8031 x56442--Sincere@april.biz--hildegard.org--"),
-	("{user.dogs:0.with_greeting}", "Hi, this is my dog Spot"),
+	("{user.dogs:0.with_greeting}", "Hi, this is my dog Snoopy"),
 ]
 
 @pytest.mark.parametrize("input, output", non_default_template_strings)

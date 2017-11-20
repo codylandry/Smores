@@ -108,20 +108,19 @@ class Smores(object):
 		:return: value to be rendered (string or template)
 		"""
 		_DEFAULT_TEMPLATE = self._DEFAULT_TEMPLATE
-		fallback_value = self.fallback_value
 		def process(var):
 			if isinstance(var, (list, )):
 				# if var is a list return the _default_template for each item
 				try:
 					return "".join([v[_DEFAULT_TEMPLATE] for v in var])
 				except:
-					return fallback_value
+					return ""
 			if isinstance(var, (dict, )):
 				# if var is a dict, then we must be returning a single schema, so try to get the _default_template
 				try:
 					return var[_DEFAULT_TEMPLATE]
 				except:
-					return fallback_value
+					return ""
 			# fallback to just returning the var as is (a plain field value)
 			return var
 		return process

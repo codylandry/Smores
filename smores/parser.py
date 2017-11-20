@@ -8,6 +8,8 @@ def convert_integers(tokens):
 def _bracketize(tokens):
 	return '[' + tokens[0].index + ']'
 
+def _colonize(tokens):
+	return ":" + str(int(tokens[0][0]) + 1)
 
 def _lowerize(tokens):
 	return tokens[0].lower()
@@ -19,12 +21,25 @@ def _combine_path(tokens):
 	return path
 
 
+def get_original_tag(tag):
+	_START = Literal('{{').setParseAction(lambda: '{')
+	_END = Literal('}}').setParseAction(lambda: '}')
+	_ATTR_NAME = Word(alphanums + '_').setParseAction(_lowerize)
+	_LIST_INDEX = Group(Literal('[').suppress() + integer + Literal(']').suppress()).setParseAction(_colonize)
+	_ATTR = Group(_ATTR_NAME + Optional(_LIST_INDEX))
+	_PATH = delimitedList(_ATTR, delim='.').setParseAction(_combine_path).setWhitespaceChars(' ')
+	_BASE_TAG = Group(_START + _PATH + _END)
+
+	result = _BASE_TAG.transformString(tag)
+	return result
+
+
 def _get_jinja_tag(default):
 	def wrapped(tokens):
 		tokens = tokens[0]
 		output = "".join(tokens)
 
-		original_tag = ORIGINAL_TAG.searchString(output)[0][0]
+		original_tag = get_original_tag(output)
 		if not default:
 			_default = ''
 		elif isinstance(default, (basestring, )):
