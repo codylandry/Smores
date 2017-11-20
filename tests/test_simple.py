@@ -12,10 +12,10 @@ def smores_instance():
 
 # ------------------------------------------------------------------------------
 parser_test_cases = [
-	("{user.name}", "{{user.name}}"),
-	("{user.dogs:1}", "{{user.dogs[0]}}"),
-	("{user.dogs:1.name}", "{{user.dogs[0].name}}"),
-	("{user.addresses:4.geo.lat}", "{{user.addresses[3].geo.lat}}"),
+	("{user.name}", '{{user.name | default("")}}'),
+	("{user.dogs:1}", '{{user.dogs[0] | default("")}}'),
+	("{user.dogs:1.name}", '{{user.dogs[0].name | default("")}}'),
+	("{user.addresses:4.geo.lat}", '{{user.addresses[3].geo.lat | default("")}}'),
 ]
 
 @pytest.mark.parametrize("input, output", parser_test_cases)

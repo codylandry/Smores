@@ -260,7 +260,7 @@ class Smores(object):
 
 		# parse end-user template (converts {user.addresses:3.name} to {{user.addresses[2].name}})
 		# gives a 'slightly' less intimidating language syntax for the user to understand.
-		jinja_template = to_jinja_template(template_string)
+		jinja_template = to_jinja_template(template_string, default=self.fallback_value)
 
 		# create the template object
 		template = self.env.from_string(jinja_template)
