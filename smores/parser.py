@@ -1,5 +1,5 @@
 from pyparsing import Literal, Word, alphanums, Optional, Group, delimitedList, ParserElement, originalTextFor
-
+import inspect
 
 def convert_integers(tokens):
 	return int(tokens[0])
@@ -23,11 +23,16 @@ def _get_jinja_tag(default):
 	def wrapped(tokens):
 		tokens = tokens[0]
 		output = "".join(tokens)
-		if default == 'ORIGINAL':
-			_default = ORIGINAL_TAG.searchString(output)[0][0]
-		else:
+
+		original_tag = ORIGINAL_TAG.searchString(output)[0][0]
+		if not default:
+			_default = ''
+		elif isinstance(default, (basestring, )):
 			_default = default
-		tokens.insert(2, ' | default("%s")' % _default)
+		elif inspect.isfunction(default):
+			_default = default(original_tag)
+
+		tokens.insert(2, " | default('%s')" % _default)
 		output = "".join(tokens)
 		return output
 	return wrapped
