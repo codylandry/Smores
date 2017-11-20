@@ -51,21 +51,13 @@ non_default_template_strings = [
 
 @pytest.mark.parametrize("input, output", non_default_template_strings)
 def test_non_default_template_strings_with_dicts(smores_instance, input, output):
-	user = users[0]
-	user['dogs'] = sorted(user['dogs'], key=lambda d: d['name'])
 	result = smores_instance.render(dict(user=users[0]), input)
 	assert result == output
-
-non_default_template_strings = [
-	("{user.long_template}", "Leanne Graham--1-770-736-8031 x56442--Sincere@april.biz--hildegard.org--"),
-	("{user.dogs:0.with_greeting}", "Hi, this is my dog Snoopy"),
-]
 
 @pytest.mark.parametrize("input, output", non_default_template_strings)
 def test_non_default_template_strings_with_models(smores_instance, input, output):
 	with db_session:
 		user = User[1]
-		user.dogs = user.dogs.sort_by(lambda d: d.name)
 		result = smores_instance.render(dict(user=user), input)
 		assert result == output
 

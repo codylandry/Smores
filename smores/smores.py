@@ -3,7 +3,7 @@ from parser import to_jinja_template
 from jinja2 import Environment
 from parser import ATTR, delimitedList
 from collections import namedtuple
-
+from functools import wraps
 
 TagAutocompleteResponse = namedtuple('TagAutocompleteResponse', ('status', 'result'))
 
@@ -82,6 +82,22 @@ class SmoresEnvironment(Environment):
 			return self.fallback_value
 
 
+class RegisterTempSchemas(object):
+	def __init__(self, smores_instance, schemas):
+		if not isinstance(schemas, (list,)):
+			self.schemas = [schemas]
+		else:
+			self.schemas = schemas
+		self.smores_instance = smores_instance
+
+	def __enter__(self):
+		self.smores_instance.add_schemas(self.schemas)
+		return self
+
+	def __exit__(self, typ, val, traceback):
+		self.smores_instance.remove_schemas(self.schemas)
+
+
 class Smores(object):
 	def __init__(self, default_template_name='_default_template', fallback_value=''):
 		"""
@@ -96,7 +112,7 @@ class Smores(object):
 		# This jinja environment sets up a function to process variables into either serialized form or template
 		self.env = SmoresEnvironment(fallback_value=fallback_value, finalize=self.process_vars())
 		self.user_templates = {}
-		self.schemas = []
+		self._schemas = set([])
 
 	def process_vars(self):
 		"""
@@ -125,13 +141,38 @@ class Smores(object):
 			return var
 		return process
 
+	def temp_schemas(self, schemas):
+		return RegisterTempSchemas(self, schemas)
+
+	@property
+	def schemas(self):
+		return list(self._schemas)
+
+	def add_schemas(self, schemas):
+		if not isinstance(schemas, (list,)):
+			schemas = [schemas]
+		else:
+			schemas = schemas
+
+		for schema in schemas:
+			self._schemas.add(schema)
+
+	def remove_schemas(self, schemas):
+		if not isinstance(schemas, (list,)):
+			schemas = [schemas]
+		else:
+			schemas = schemas
+
+		for schema in schemas:
+			self._schemas.remove(schema)
+
 	def schema(self, schema):
 		"""
 		A decorator that registers a marshmallow schema
 		:param schema:
 		:return:
 		"""
-		self.schemas.append(schema)
+		self.add_schemas(schema)
 		return schema
 
 	def tag_autocomplete(self, fragment, only=None, exclude=None):
