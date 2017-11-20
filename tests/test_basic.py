@@ -1,4 +1,4 @@
-from smores import Smores
+from smores import Smores, TagAutocompleteResponse
 from smores.parser import to_jinja_template
 from sample_data import users, register_schemas
 import pytest
@@ -25,8 +25,9 @@ def test_parser(input, output):
 # ------------------------------------------------------------------------------
 default_template_cases = [
 	("{user}", "Leanne Graham---Sincere@april.biz"),
-	("{user.address}", "Kulas Light---Gwenborough----37.3159,81.1496"),
-	("{user.address.geo}", "-37.3159,81.1496"),
+	("{user.address}", "Kulas Light---Gwenborough---"),
+	("{user.address.geo}", ""),
+	("{user.address.geo.lat}", "-37.3159"),
 	("{user.company}", "Romaguera-Crona---Multi-layered client-server neural-net---harness real-time e-markets"),
 ]
 
@@ -37,7 +38,7 @@ def test_render_default_template(smores_instance, input, output):
 
 # ------------------------------------------------------------------------------
 non_default_template_strings = [
-	("{user.long_template}", "Leanne Graham--1-770-736-8031 x56442--Sincere@april.biz--hildegard.org---37.3159,81.1496"),
+	("{user.long_template}", "Leanne Graham--1-770-736-8031 x56442--Sincere@april.biz--hildegard.org--"),
 	("{user.dogs:0.with_greeting}", "Hi, this is my dog Spot"),
 ]
 
@@ -64,3 +65,24 @@ def test_bad_render_inputs(smores_instance, input):
 	data, template = input
 	with pytest.raises(Exception):
 		smores_instance.render(data, template)
+
+# ------------------------------------------------------------------------------
+autocomplete_cases = [
+	("user", TagAutocompleteResponse('VALID', ['_default_template', 'address', 'company',
+	                                           'dogs', 'email', 'id', 'long_template', 'name', 'phone', 'website'])),
+	("u", TagAutocompleteResponse('INVALID', ['user'])),
+	("user.a", TagAutocompleteResponse('INVALID', ['address'])),
+	("user.dogs", TagAutocompleteResponse('INVALID', [':1'])),
+	("user.dogs:1", TagAutocompleteResponse('INVALID', ['_default_template', 'name', 'with_greeting'])),
+	("user.dogs:1.name", TagAutocompleteResponse('VALID', [])),
+	("address.geo", TagAutocompleteResponse('INVALID', ['lat', 'lng'])),
+	("some.garbage", TagAutocompleteResponse('INVALID', [])),
+	("user.garbage", TagAutocompleteResponse('INVALID', [])),
+	("user.address.garbage", TagAutocompleteResponse('INVALID', [])),
+	("user.aliases.garbage", TagAutocompleteResponse('INVALID', [])),
+	("user.aliases:1.garbage", TagAutocompleteResponse('INVALID', [])),
+]
+
+@pytest.mark.parametrize("input, output", autocomplete_cases)
+def test_tag_autocomplete(smores_instance, input, output):
+	assert smores_instance.tag_autocomplete(input) == output

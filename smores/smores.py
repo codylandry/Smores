@@ -2,6 +2,10 @@ from marshmallow import Schema, fields
 from parser import to_jinja_template
 from jinja2 import Environment
 from parser import ATTR, delimitedList
+from collections import namedtuple
+
+
+TagAutocompleteResponse = namedtuple('TagAutocompleteResponse', ('status', 'result'))
 
 
 class TemplateString(fields.Field):
@@ -130,6 +134,7 @@ class Smores(object):
 		:return: a list of 'tab completion' results based on the tag fragment
 		"""
 		fragment = fragment.strip()
+		sort_and_lower = lambda l: sorted([getattr(l, i) for i in l])
 
 		# include/exclude root schemas from results
 		allowed_root_schemas = self.schemas[:]
@@ -143,7 +148,7 @@ class Smores(object):
 
 		# return allowed schemas if fragment is blank
 		if not fragment:
-			return [s.__name__.lower() for s in allowed_root_schemas]
+			return TagAutocompleteResponse("INVALID", sorted([s.__name__.lower() for s in allowed_root_schemas]))
 
 		# parse fragment into tokens
 		attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
@@ -156,15 +161,18 @@ class Smores(object):
 
 		# otherwise get any schema starting with fragment
 		elif len(attrs) == 1:
-			return [s.__name__.lower() for s in allowed_root_schemas
-			        if s.__name__.lower().startswith(attrs[0].lower())]
+			result = [s.__name__.lower() for s in allowed_root_schemas
+			          if s.__name__.lower().startswith(attrs[0].lower())]
+			return TagAutocompleteResponse("INVALID", sorted(result))
 
 		# otherwise, it's an invalid fragment
 		else:
-			return []
+			return TagAutocompleteResponse("INVALID", [])
 
 		get_fields = lambda n: map(lambda s: s.lower(), n.declared_fields.keys())
 		current_node_field_names = get_fields(current_node)
+		output = current_node_field_names
+		attr = attrs[0].lower()
 		for idx, attr in enumerate(attrs[1:]):
 			is_last_attr = idx == len(attrs[1:]) - 1
 			current_node_field_names = get_fields(current_node)
@@ -179,7 +187,8 @@ class Smores(object):
 
 					# if it's a many field and the last attr, return an option to index the array
 					if is_last_attr and node.many == True:
-						return [':1']
+						output = [':1']
+						break
 
 					# otherwise update the field names
 					current_node_field_names = get_fields(current_node)
@@ -194,12 +203,24 @@ class Smores(object):
 			else:
 				current_node_field_names = [f for f in current_node_field_names if f.startswith(attr.lower())]
 
+			output = current_node_field_names
+
+		status = 'VALID'
+		if not fragment:
+			status = 'INVALID'
 
 		if isinstance(current_node, (Schema,)):
-			return current_node_field_names
-		else:
-			return []
+			if attr.lower() == current_node.__class__.__name__.lower():
+				if '_default_template' not in output:
+					status = "INVALID"
 
+			elif attr not in get_fields(current_node):
+				status = 'INVALID'
+
+		else:
+			output = []
+
+		return TagAutocompleteResponse(status, sorted(output))
 
 	def TemplateString(self, *args, **kwargs):
 		return TemplateString(*args, env=self.env, **kwargs)

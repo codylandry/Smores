@@ -247,7 +247,6 @@ def register_schemas(smores):
 	class Coordinates(Schema):
 		lat = fields.Decimal()
 		lng = fields.Decimal()
-		_default_template = smores.TemplateString("{{lat}},{{lng}}")
 
 	@smores.schema
 	class Address(Schema):
