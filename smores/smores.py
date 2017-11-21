@@ -1,7 +1,6 @@
 from marshmallow import Schema, fields
-from parser import to_jinja_template
+from parser import to_jinja_template, ATTR, delimitedList
 from jinja2 import Environment
-from parser import ATTR, delimitedList
 from collections import namedtuple
 from functools import wraps
 

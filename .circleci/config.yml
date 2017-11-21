@@ -1,0 +1,31 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    working_directory: ~/smores
+    docker:
+      - image: circleci/python:2.7.13
+    steps:
+      - checkout
+      - restore_cache:
+          key: deps-{{ checksum "setup.py" }}
+      - run:
+          name: Install dependencies
+          command: |
+            virtualenv venv
+            source venv/bin/activate
+            python setup.py install
+
+      - save_cache:
+          key: deps-{{ checksum "setup.py" }}
+          paths:
+            - venv
+
+      - run:
+          name: Run tests
+          command: |
+            python setup.py test
+            source venv/bin/activate

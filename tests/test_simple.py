@@ -34,13 +34,17 @@ default_template_cases = [
 
 @pytest.mark.parametrize("input, output", default_template_cases)
 def test_render_default_template_with_dicts(smores_instance, input, output):
+	user = users[0]
+	user['dogs'] = sorted(users[0]['dogs'], key=lambda d: d['name'])
 	result = smores_instance.render(dict(user=users[0]), input)
 	assert result == output
 
 @pytest.mark.parametrize("input, output", default_template_cases)
 def test_render_default_template_with_models(smores_instance, input, output):
 	with db_session:
-		result = smores_instance.render(dict(user=User[1]), input)
+		user = User[1]
+		user.dogs = sorted(user.dogs, key=lambda d: d.name)
+		result = smores_instance.render(dict(user=user), input)
 		assert result == output
 
 # ------------------------------------------------------------------------------
@@ -57,8 +61,7 @@ def test_non_default_template_strings_with_dicts(smores_instance, input, output)
 @pytest.mark.parametrize("input, output", non_default_template_strings)
 def test_non_default_template_strings_with_models(smores_instance, input, output):
 	with db_session:
-		user = User[1]
-		result = smores_instance.render(dict(user=user), input)
+		result = smores_instance.render(dict(user=User[1]), input)
 		assert result == output
 
 # ------------------------------------------------------------------------------
