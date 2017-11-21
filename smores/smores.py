@@ -82,6 +82,11 @@ class TemplateFile(TemplateString):
 
 class RegisterTempSchemas(object):
 	def __init__(self, smores_instance, schemas):
+		"""
+		A context manager for temporarily registering schemas with
+		a smores instance
+		:param schemas: single/list schema classes
+		"""
 		if not isinstance(schemas, (list,)):
 			self.schemas = [schemas]
 		else:
