@@ -8,13 +8,16 @@ TagAutocompleteResponse = namedtuple('TagAutocompleteResponse', ('status', 'resu
 
 
 class TemplateString(fields.Field):
-	"""
-	This field takes a jinja template as an argument and returns the rendered the template during serialization
-	"""
 	# TemplateStrings never map to a particular value on the obj, but rather, the whole object
 	_CHECK_ATTRIBUTE = False
 
 	def __init__(self, template_string, env=None, use_parser=False, *args, **kwargs):
+		"""
+		Renders template_string using jinja w/o parser
+		:param template_string: a jinja template
+		:param env: jinja environment
+		:param use_parser: flag for whether to use the smores parser
+		"""
 		super(TemplateString, self).__init__(*args, **kwargs)
 
 		# the template string to be rendered
@@ -51,33 +54,19 @@ class TemplateString(fields.Field):
 
 
 class TemplateFile(TemplateString):
-	"""
-	Allows ability to store templates in files
-	"""
 
 	def __init__(self, template_path, env=None, use_parser=False, *args, **kwargs):
+		"""
+		Reads file at template_path and renders template using jinja w/o parser
+		:param template_string: a jinja template
+		:param env: jinja environment
+		:param use_parser: flag for whether to use the smores parser
+		"""
 		# grab the template file
 		with open(template_path, 'rb') as template_file:
 			template_string = template_file.read()
 		# pass it on to TemplateString
 		super(TemplateFile, self).__init__(template_string, env=env, use_parser=use_parser, *args, **kwargs)
-
-
-# class SmoresEnvironment(Environment):
-# 	def __init__(self, *args, **kwargs):
-# 		super(SmoresEnvironment, self).__init__(*args, **kwargs)
-#
-# 	def getattr(self, obj, attribute):
-# 		try:
-# 			return super(SmoresEnvironment, self).getattr(obj, attribute)
-# 		except:
-# 			return self.fallback_value
-#
-# 	def getitem(self, obj, attribute):
-# 		try:
-# 			return super(SmoresEnvironment, self).getitem(obj, attribute)
-# 		except:
-# 			return self.fallback_value
 
 
 class RegisterTempSchemas(object):
@@ -107,16 +96,15 @@ class Smores(object):
 		Provides a method of defining a schema for string templates.  Presents a tag syntax
 		easy enough for end users to use.
 		:param default_template_name: The name you'd like to use for default schema templates
-		:param fallback_value: A string value you'd like to use when a tag can't be resolved.
 		"""
 		self._DEFAULT_TEMPLATE = default_template_name
 
 		# This jinja environment sets up a function to process variables into either serialized form or template
-		self.env = Environment(finalize=self.process_vars())
+		self.env = Environment(finalize=self._process_jinja_variables())
 		self.user_templates = {}
-		self._schemas = set([])
+		self._registered_schemas = set([])
 
-	def process_vars(self):
+	def _process_jinja_variables(self):
 		"""
 		Does final processing of variables resolved by jinja.
 		A dict means we have the result of a single schema dump.
@@ -144,40 +132,57 @@ class Smores(object):
 		return process
 
 	def temp_schemas(self, schemas):
+		"""
+		Returns a context manager that temporarily registers 'schemas'
+		Useful for adding some schemas for a render call without polluting/conflicting
+		with existing schemas
+		:param schemas:  single schema or list of schemas
+		:return: RegisterTempSchemas instance
+		"""
 		return RegisterTempSchemas(self, schemas)
 
 	@property
 	def schemas(self):
-		return list(self._schemas)
+		return list(self._registered_schemas)
 
 	def add_schemas(self, schemas):
+		"""
+		Registers schemas from instance
+		:param schemas: single schema or list of schemas
+		:return: None
+		"""
 		if not isinstance(schemas, (list,)):
 			schemas = [schemas]
 		else:
 			schemas = schemas
 
 		for schema in schemas:
-			self._schemas.add(schema)
+			self._registered_schemas.add(schema)
 
 	def remove_schemas(self, schemas):
+		"""
+		Unregisters schemas from instance
+		:param schemas: single schema or list of schemas
+		:return: None
+		"""
 		if not isinstance(schemas, (list,)):
 			schemas = [schemas]
 		else:
 			schemas = schemas
 
 		for schema in schemas:
-			self._schemas.remove(schema)
+			self._registered_schemas.remove(schema)
 
 	def schema(self, schema):
 		"""
 		A decorator that registers a marshmallow schema
-		:param schema:
-		:return:
+		:param schema: schema class
+		:return: schema
 		"""
 		self.add_schemas(schema)
 		return schema
 
-	def tag_autocomplete(self, fragment, only=None, exclude=None):
+	def autocomplete(self, fragment, only=None, exclude=None):
 		"""
 		Gets the available options for a given tag fragment
 		:param base_schema: The schema the template was written for
@@ -276,9 +281,17 @@ class Smores(object):
 		return TagAutocompleteResponse(status, sorted(output))
 
 	def TemplateString(self, *args, **kwargs):
+		"""
+		Closure for instantiating the TemplateString field with the current env
+		:return: TemplateString Instance
+		"""
 		return TemplateString(*args, env=self.env, **kwargs)
 
 	def TemplateFile(self, *args, **kwargs):
+		"""
+		Closure for instantiating the TemplateFile field with the current env
+		:return: TemplateFile Instance
+		"""
 		return TemplateFile(*args, env=self.env, **kwargs)
 
 	def render(self, data, template_string, sub_templates=None, fallback_value=''):

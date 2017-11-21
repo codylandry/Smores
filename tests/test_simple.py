@@ -103,4 +103,4 @@ autocomplete_cases = [
 
 @pytest.mark.parametrize("input, output", autocomplete_cases)
 def test_tag_autocomplete(smores_instance, input, output):
-	assert smores_instance.tag_autocomplete(input) == output
+	assert smores_instance.autocomplete(input) == output
