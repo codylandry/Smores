@@ -2,7 +2,6 @@ from marshmallow import Schema, fields
 from parser import to_jinja_template, ATTR, delimitedList
 from jinja2 import Environment
 from collections import namedtuple
-from functools import wraps
 
 TagAutocompleteResponse = namedtuple('TagAutocompleteResponse', ('status', 'result'))
 
@@ -49,9 +48,6 @@ class TemplateString(fields.Field):
 		template = self.env.from_string(self.template_string)
 		return template.render(**context)
 
-	def get_value(self, attr, obj, accessor=None, default=''):
-		return obj
-
 
 class TemplateFile(TemplateString):
 
@@ -76,10 +72,10 @@ class RegisterTempSchemas(object):
 		a smores instance
 		:param schemas: single/list schema classes
 		"""
-		if not isinstance(schemas, (list,)):
-			self.schemas = [schemas]
-		else:
-			self.schemas = schemas
+		# if not isinstance(schemas, (list,)):
+		# 	self.schemas = [schemas]
+		# else:
+		self.schemas = schemas
 		self.smores_instance = smores_instance
 
 	def __enter__(self):
@@ -308,8 +304,9 @@ class Smores(object):
 		assert isinstance(template_string, (basestring, )), 'template_string expected type string got %s' % type(template_string)
 
 		# substitute sub template tag names with
-		for tag_name, tag_template_str in sub_templates or []:
-			template_string = template_string.replace("{%s}" % tag_name, tag_template_str)
+		if sub_templates:
+			for tag_name, tag_template_str in sub_templates.items():
+				template_string = template_string.replace("{%s}" % tag_name, tag_template_str)
 
 		get_schema = lambda k: next((s for s in self.schemas if s.__name__.lower() == k.lower()), None)
 

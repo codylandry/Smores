@@ -1,9 +1,6 @@
 from pyparsing import Literal, Word, alphanums, Optional, Group, delimitedList, ParserElement, originalTextFor
 import inspect
 
-def convert_integers(tokens):
-	return int(tokens[0])
-
 
 def _bracketize(tokens):
 	return '[' + tokens[0].index + ']'
@@ -20,7 +17,6 @@ def _combine_path(tokens):
 	path = '.'.join(nodes)
 	return path
 
-
 def get_original_tag(tag):
 	_START = Literal('{{').setParseAction(lambda: '{')
 	_END = Literal('}}').setParseAction(lambda: '}')
@@ -32,7 +28,6 @@ def get_original_tag(tag):
 
 	result = _BASE_TAG.transformString(tag)
 	return result
-
 
 def _get_jinja_tag(default):
 	def wrapped(tokens):

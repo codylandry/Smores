@@ -3,6 +3,7 @@ from smores.parser import to_jinja_template
 from sample_data import users, register_schemas
 from create_db import User, db_session, select
 import pytest
+from marshmallow import Schema, fields
 
 @pytest.fixture(scope='module')
 def smores_instance():
@@ -30,6 +31,7 @@ default_template_cases = [
 	("{user.address.geo}", ""),
 	("{user.address.geo.lat}", "-37.3159"),
 	("{user.company}", "Romaguera-Crona---Multi-layered client-server neural-net---harness real-time e-markets"),
+	("{user.basic}", "<div>Leanne Graham</div><div>Sincere@april.biz</div>")
 ]
 
 @pytest.mark.parametrize("input, output", default_template_cases)
@@ -86,7 +88,7 @@ def test_bad_render_inputs(smores_instance, input):
 
 # ------------------------------------------------------------------------------
 autocomplete_cases = [
-	("user", TagAutocompleteResponse('VALID', ['_default_template', 'address', 'company',
+	("user", TagAutocompleteResponse('VALID', ['_default_template', 'address', 'basic', 'company',
 	                                           'dogs', 'email', 'id', 'long_template', 'name', 'phone', 'website'])),
 	("u", TagAutocompleteResponse('INVALID', ['user'])),
 	("user.a", TagAutocompleteResponse('INVALID', ['address'])),
@@ -104,3 +106,54 @@ autocomplete_cases = [
 @pytest.mark.parametrize("input, output", autocomplete_cases)
 def test_tag_autocomplete(smores_instance, input, output):
 	assert smores_instance.autocomplete(input) == output
+
+# ------------------------------------------------------------------------------
+def test_temp_schemas_single(smores_instance):
+	class Event(Schema):
+		tech = fields.String()
+		location = fields.String()
+
+	event = dict(tech="Tom Johnson", location="South Broad St.")
+	data = dict(user=users[0], event=event)
+	template = "{user}--{event.tech}"
+	expected_outcome = "Leanne Graham---Sincere@april.biz--Tom Johnson"
+
+	with smores_instance.temp_schemas(Event):
+		assert smores_instance.render(data, template) == expected_outcome
+
+def test_temp_schemas_list(smores_instance):
+	class Event(Schema):
+		tech = fields.String()
+		location = fields.String()
+
+	event = dict(tech="Tom Johnson", location="South Broad St.")
+	data = dict(user=users[0], event=event)
+	template = "{user}--{event.tech}"
+	expected_outcome = "Leanne Graham---Sincere@april.biz--Tom Johnson"
+
+	with smores_instance.temp_schemas([Event]):
+		assert smores_instance.render(data, template) == expected_outcome
+
+# ------------------------------------------------------------------------------
+fallback_cases = [
+	(None, "Leanne Graham--Sincere@april.biz--"),
+	("INVALID_TAG", "Leanne Graham--Sincere@april.biz--INVALID_TAG"),
+	(lambda tag: "!!%s!!" % tag, "Leanne Graham--Sincere@april.biz--!!{user.notarealtag}!!")
+]
+@pytest.mark.parametrize("fallback_value, output", fallback_cases)
+def test_smores_fallback_string(smores_instance, fallback_value, output):
+	template = "{user.name}--{user.email}--{user.notARealTag}"
+	assert smores_instance.render(dict(user=users[0]), template, fallback_value=fallback_value) == output
+
+# ------------------------------------------------------------------------------
+def test_subtemplates(smores_instance):
+	sub_templates = {
+		"subtemplate1": "{user.name}--{user.website}",
+		"subtemplate2": "{user.email}--{user.phone}",
+	}
+
+	data = dict(user=users[0])
+	template = "{subtemplate1}---{subtemplate2}"
+	expected_outcome = "Leanne Graham--hildegard.org---Sincere@april.biz--1-770-736-8031 x56442"
+	assert smores_instance.render(data, template, sub_templates=sub_templates) == expected_outcome
+
