@@ -119,6 +119,6 @@ print smores.render(data, user_template)
 - [ ] Add template analyzer to get list of required data
 - [X] tag_autocomplete should have only and exclude
 - [X] Add test that use model classes from an orm (probably use Pony and sqlite)
-- [ ] Add CircleCi integration for PR's
+- [X] Add CircleCi integration for PR's
 - [ ] Improve Documentation
 - [ ] Add option to not use parser
