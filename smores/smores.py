@@ -64,22 +64,21 @@ class TemplateFile(TemplateString):
 		super(TemplateFile, self).__init__(template_string, env=env, use_parser=use_parser, *args, **kwargs)
 
 
-class SmoresEnvironment(Environment):
-	def __init__(self, fallback_value='', *args, **kwargs):
-		super(SmoresEnvironment, self).__init__(*args, **kwargs)
-		self.fallback_value = fallback_value
-
-	def getattr(self, obj, attribute):
-		try:
-			return super(SmoresEnvironment, self).getattr(obj, attribute)
-		except:
-			return self.fallback_value
-
-	def getitem(self, obj, attribute):
-		try:
-			return super(SmoresEnvironment, self).getitem(obj, attribute)
-		except:
-			return self.fallback_value
+# class SmoresEnvironment(Environment):
+# 	def __init__(self, *args, **kwargs):
+# 		super(SmoresEnvironment, self).__init__(*args, **kwargs)
+#
+# 	def getattr(self, obj, attribute):
+# 		try:
+# 			return super(SmoresEnvironment, self).getattr(obj, attribute)
+# 		except:
+# 			return self.fallback_value
+#
+# 	def getitem(self, obj, attribute):
+# 		try:
+# 			return super(SmoresEnvironment, self).getitem(obj, attribute)
+# 		except:
+# 			return self.fallback_value
 
 
 class RegisterTempSchemas(object):
@@ -99,7 +98,7 @@ class RegisterTempSchemas(object):
 
 
 class Smores(object):
-	def __init__(self, default_template_name='_default_template', fallback_value=''):
+	def __init__(self, default_template_name='_default_template'):
 		"""
 		Provides a method of defining a schema for string templates.  Presents a tag syntax
 		easy enough for end users to use.
@@ -107,10 +106,9 @@ class Smores(object):
 		:param fallback_value: A string value you'd like to use when a tag can't be resolved.
 		"""
 		self._DEFAULT_TEMPLATE = default_template_name
-		self.fallback_value = fallback_value
 
 		# This jinja environment sets up a function to process variables into either serialized form or template
-		self.env = SmoresEnvironment(fallback_value=fallback_value, finalize=self.process_vars())
+		self.env = Environment(finalize=self.process_vars())
 		self.user_templates = {}
 		self._schemas = set([])
 
@@ -279,7 +277,7 @@ class Smores(object):
 	def TemplateFile(self, *args, **kwargs):
 		return TemplateFile(*args, env=self.env, **kwargs)
 
-	def render(self, data, template_string, sub_templates=None):
+	def render(self, data, template_string, sub_templates=None, fallback_value=''):
 		"""
 		Recursively populates the 'template_string' with data gathered from dumping 'data' through the Marshmallow 'schema'.
 		Variables are evaluated and will return the '_default_template' if one exists.  Prettifies end result.
@@ -300,7 +298,7 @@ class Smores(object):
 
 		# parse end-user template (converts {user.addresses:3.name} to {{user.addresses[2].name}})
 		# gives a 'slightly' less intimidating language syntax for the user to understand.
-		jinja_template = to_jinja_template(template_string, default=self.fallback_value)
+		jinja_template = to_jinja_template(template_string, default=fallback_value)
 
 		# create the template object
 		template = self.env.from_string(jinja_template)
