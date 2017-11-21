@@ -1,5 +1,7 @@
 # Smores
 
+[![CircleCI](https://img.shields.io/circleci/project/github/codylandry/Smores.svg)]()
+
 Smores allows you to specify a schema for user facing template features.  It leverages marshmallow (hence 'smores') to
 populate and transform data that is then rendered via jinja.  It has a parser that presents a more friendly syntax to 
 users (ex. {user.addresses:1.street}).  It also includes an autocomplete method that gives you intellisense style 
