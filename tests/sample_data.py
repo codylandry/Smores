@@ -281,5 +281,5 @@ def register_schemas(smores):
 		company = fields.Nested(Company)
 		dogs = fields.Nested(Dog, many=True)
 		_default_template = smores.TemplateString("""{{name}}---{{email}}""")
-		basic = smores.TemplateFile("user_basic.html")
+		basic = smores.TemplateFile("tests/user_basic.html")
 		long_template = smores.TemplateString("{{name}}--{{phone}}--{{email}}--{{website}}--{{address.geo}}")
