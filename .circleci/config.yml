@@ -27,5 +27,6 @@ jobs:
       - run:
           name: Run tests
           command: |
-            python setup.py test
             source venv/bin/activate
+            coverage run --source=smores setup.py test
+            COVERALLS_REPO_TOKEN="qOJfq76BjuA2Rkerj9IVBry811WZeBn5x" coveralls

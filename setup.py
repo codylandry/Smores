@@ -84,7 +84,7 @@ setup(
     author_email=EMAIL,
     url=URL,
     packages=find_packages(exclude=('tests',)),
-	setup_requires=['pytest-runner'],
+	setup_requires=['pytest-runner', "coveralls", "coverage"],
     tests_require=['pytest', 'pony'],
     install_requires=REQUIRED,
     include_package_data=True,
