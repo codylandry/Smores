@@ -247,5 +247,4 @@ def test_invalid_root_attr_w_model(smores_instance):
 		template = "{user.invalidattr.dog}"
 		result = smores_instance.render(dict(user=User[1]), template)
 		assert result == ''
-
-
+    
