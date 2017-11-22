@@ -6,7 +6,7 @@ def loop_table_rows(iterable_tags, template_string):
 
 	for tag, for_statement_params in iterable_tags.items():
 		iterator, iterable = for_statement_params
-		for_statement = "{% for %s in %s %}" % (iterator, iterable)
+		for_statement = "{% for " + iterator + " in " + iterable + " %}"
 		td = table.find('td', string=tag)
 		rows = []
 		if td:
@@ -21,4 +21,4 @@ def loop_table_rows(iterable_tags, template_string):
 				except Exception as e:
 					break
 			tr.insert_after("{% endfor %}")
-	return soup.prettify()
+	return str(soup)

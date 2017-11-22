@@ -7,3 +7,4 @@
 .eggs/
 _dev.py
 smores.egg-info/
+.coverage

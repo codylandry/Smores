@@ -1,15 +1,24 @@
-from smores import Smores, TagAutocompleteResponse
+from smores import Smores, TagAutocompleteResponse, __version__
 from smores.parser import to_jinja_template
+from smores.utils import loop_table_rows
 from sample_data import users, register_schemas
 from create_db import User, db_session, select
 import pytest
 from marshmallow import Schema, fields
+
+
 
 @pytest.fixture(scope='module')
 def smores_instance():
 	smores = Smores()
 	register_schemas(smores)
 	return smores
+
+
+
+# ------------------------------------------------------------------------------
+def get_version():
+	assert bool(__version__)
 
 # ------------------------------------------------------------------------------
 parser_test_cases = [
@@ -202,3 +211,14 @@ def test_subtemplates(smores_instance):
 	expected_outcome = "Leanne Graham--hildegard.org---Sincere@april.biz--1-770-736-8031 x56442"
 	assert smores_instance.render(data, template, sub_templates=sub_templates) == expected_outcome
 
+# ------------------------------------------------------------------------------
+def test_repeating_table_rows_func(smores_instance):
+	iterable_tags = {
+		"{mydogs.name}": ("mydogs", "user.dogs")
+	}
+
+	template = "<table><tr><td>{mydogs.name}</td></tr><tr><td>{mydogs.name}</td></tr></table>"
+
+	result = loop_table_rows(iterable_tags, template)
+	expected_output = "<table>{% for mydogs in user.dogs %}<tr><td>{mydogs.name}</td></tr><tr><td>{mydogs.name}</td></tr>{% endfor %}</table>"
+	assert result == expected_output
