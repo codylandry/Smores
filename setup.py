@@ -74,6 +74,8 @@ class UploadCommand(Command):
         sys.exit()
 
 
+test_deps = ['pytest', 'pony', 'pytest-runner', "coveralls", "coverage"]
+
 # Where the magic happens:
 setup(
     name=NAME,
@@ -85,7 +87,7 @@ setup(
     url=URL,
     packages=find_packages(exclude=('tests',)),
 	setup_requires=[],
-    tests_require=['pytest', 'pony', 'pytest-runner', "coveralls", "coverage"],
+    tests_require=test_deps,
     install_requires=REQUIRED,
     include_package_data=True,
     license='MIT',
@@ -104,6 +106,9 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
+	extras = {
+	    'test': test_deps,
+	},
     # $ setup.py publish support.
     cmdclass={
         'upload': UploadCommand,
