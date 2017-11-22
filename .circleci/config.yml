@@ -19,6 +19,7 @@ jobs:
             source venv/bin/activate
             python setup.py install
             pip install .[test]
+            pip install .[utils]
 
       - save_cache:
           key: deps-{{ checksum "setup.py" }}

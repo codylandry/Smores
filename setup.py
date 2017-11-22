@@ -108,6 +108,7 @@ setup(
     ],
 	extras_require = {
 	    'test': test_deps,
+		'utils': ['bs4']
 	},
     # $ setup.py publish support.
     cmdclass={
