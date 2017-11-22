@@ -249,10 +249,18 @@ def test_invalid_root_attr_w_model(smores_instance):
 		result = smores_instance.render(dict(user=User[1]), template)
 		assert result == ''
 
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def test_get_module_schemas():
 	schemas = get_module_schemas(schemas_module)
 	smores = Smores()
 	smores.add_schemas(schemas)
 	res = smores.render(dict(user=users[0]), "{user.name}")
 	assert res == 'Leanne Graham'
+
+# ------------------------------------------------------------------------------
+def test_add_module_schemas():
+	smores = Smores()
+	smores.add_module_schemas(schemas_module)
+	res = smores.render(dict(user=users[0]), "{user.name}")
+	assert res == 'Leanne Graham'
+

@@ -4,6 +4,7 @@ from jinja2 import Environment
 from collections import namedtuple
 from inspect import isfunction
 from contextlib import contextmanager
+from .utils import get_module_schemas
 
 
 TagAutocompleteResponse = namedtuple('TagAutocompleteResponse', ('status', 'result'))
@@ -137,6 +138,9 @@ class Smores(object):
 	@property
 	def schemas(self):
 		return list(self._registered_schemas)
+
+	def add_module_schemas(self, module_):
+		self.add_schemas(get_module_schemas(module_))
 
 	def add_schemas(self, schemas):
 		"""
