@@ -5,6 +5,7 @@ from sample_data import users, register_schemas
 from create_db import User, db_session, select
 import pytest
 from marshmallow import Schema, fields
+import schemas_module
 
 
 
@@ -249,4 +250,9 @@ def test_invalid_root_attr_w_model(smores_instance):
 		assert result == ''
 
 # # ------------------------------------------------------------------------------
-# def test_get_module_schemas():
+def test_get_module_schemas():
+	schemas = get_module_schemas(schemas_module)
+	smores = Smores()
+	smores.add_schemas(schemas)
+	res = smores.render(dict(user=users[0]), "{user.name}")
+	assert res == 'Leanne Graham'

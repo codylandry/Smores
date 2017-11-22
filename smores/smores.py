@@ -271,20 +271,6 @@ class Smores(object):
 
 		return TagAutocompleteResponse(status, sorted(output))
 
-	# def TemplateString(self, *args, **kwargs):
-	# 	"""
-	# 	Closure for instantiating the TemplateString field with the current env
-	# 	:return: TemplateString Instance
-	# 	"""
-	# 	return TemplateString(*args, env=self.env, **kwargs)
-	#
-	# def TemplateFile(self, *args, **kwargs):
-	# 	"""
-	# 	Closure for instantiating the TemplateFile field with the current env
-	# 	:return: TemplateFile Instance
-	# 	"""
-	# 	return TemplateFile(*args, env=self.env, **kwargs)
-
 	def render(self, data, template_string, sub_templates=None, fallback_value='', pre_process=None):
 		"""
 		Recursively populates the 'template_string' with data gathered from dumping 'data' through the Marshmallow 'schema'.

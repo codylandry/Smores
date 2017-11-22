@@ -5,7 +5,8 @@ from marshmallow import Schema
 def get_module_schemas(module_):
 	"""Gets all schemas from module_"""
 	is_schema = lambda obj: inspect.isclass(obj) and issubclass(obj, (Schema, ))
-	return inspect.getmembers(module_, is_schema)
+	schema_tuples = inspect.getmembers(module_, is_schema)
+	return [s[1] for s in schema_tuples]
 
 def loop_table_rows(iterable_tags, template_string):
 	"""
