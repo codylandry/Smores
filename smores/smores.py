@@ -80,6 +80,18 @@ class SmoresEnvironment(Environment):
 			return self.fallback_value
 
 
+class SmoresEnvironment(Environment):
+	def __init__(self, fallback_value='', *args, **kwargs):
+		super(SmoresEnvironment, self).__init__(*args, **kwargs)
+		self.fallback_value = fallback_value
+
+	def getattr(self, obj, attribute):
+		try:
+			return super(SmoresEnvironment, self).getattr(obj, attribute)
+		except:
+			return self.fallback_value
+
+
 class Smores(object):
 	def __init__(self, default_template_name='_default_template'):
 		"""
