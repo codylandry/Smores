@@ -1,6 +1,6 @@
 # Smores
 
-[![CircleCI](https://img.shields.io/circleci/project/github/codylandry/Smores.svg)](https://github.com/codylandry/Smores)
+[![CircleCI](https://img.shields.io/circleci/project/github/codylandry/Smores.svg)](https://circleci.com/gh/codylandry/Smores)
 [![Coverage Status](https://coveralls.io/repos/github/codylandry/Smores/badge.svg?branch=master)](https://coveralls.io/github/codylandry/Smores?branch=master)
 
 Smores allows you to specify a schema for user facing template features.  It leverages marshmallow (hence 'smores') to
