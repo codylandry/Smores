@@ -18,6 +18,7 @@ jobs:
             virtualenv venv
             source venv/bin/activate
             python setup.py install
+            pip install .[test]
 
       - save_cache:
           key: deps-{{ checksum "setup.py" }}
@@ -27,5 +28,6 @@ jobs:
       - run:
           name: Run tests
           command: |
-            python setup.py test
             source venv/bin/activate
+            coverage run --source=smores setup.py test
+            COVERALLS_REPO_TOKEN="qOJfq76BjuA2Rkerj9IVBry811WZeBn5x" coveralls
