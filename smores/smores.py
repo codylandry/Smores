@@ -97,12 +97,6 @@ class SmoresEnvironment(Environment):
 		except:
 			return self.fallback_value
 
-	def getitem(self, obj, attribute):
-		try:
-			return super(SmoresEnvironment, self).getitem(obj, attribute)
-		except:
-			return self.fallback_value
-
 
 class Smores(object):
 	def __init__(self, default_template_name='_default_template'):
@@ -306,7 +300,7 @@ class Smores(object):
 		"""
 		return TemplateFile(*args, env=self.env, **kwargs)
 
-	def render(self, data, template_string, sub_templates=None, fallback_value=''):
+	def render(self, data, template_string, sub_templates=None, fallback_value='', pre_process=None):
 		"""
 		Recursively populates the 'template_string' with data gathered from dumping 'data' through the Marshmallow 'schema'.
 		Variables are evaluated and will return the '_default_template' if one exists.  Prettifies end result.
@@ -329,6 +323,9 @@ class Smores(object):
 		# parse end-user template (converts {user.addresses:3.name} to {{user.addresses[2].name}})
 		# gives a 'slightly' less intimidating language syntax for the user to understand.
 		jinja_template = to_jinja_template(template_string, default=fallback_value)
+
+		if pre_process:
+			jinja_template = pre_process(jinja_template)
 
 		# create the template object
 		template = self.env.from_string(jinja_template)

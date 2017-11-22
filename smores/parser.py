@@ -63,7 +63,7 @@ LIST_INDEX = Group(Literal(':').suppress() + integer).setParseAction(_bracketize
 ATTR_NAME = Word(alphanums + '_').setParseAction(_lowerize)
 ATTR = Group(ATTR_NAME + Optional(LIST_INDEX))
 PATH = delimitedList(ATTR, delim='.').setParseAction(_combine_path).setWhitespaceChars(' ')
-BASE_TAG = Group(START + ~JINJA_TOKENS + PATH + END)
+BASE_TAG = Group(START + PATH + END)
 
 def to_jinja_template(template_string, default=""):
 	"""

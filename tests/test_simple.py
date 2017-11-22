@@ -17,7 +17,7 @@ def smores_instance():
 
 
 # ------------------------------------------------------------------------------
-def get_version():
+def test_get_version():
 	assert bool(__version__)
 
 # ------------------------------------------------------------------------------
@@ -222,3 +222,30 @@ def test_repeating_table_rows_func(smores_instance):
 	result = loop_table_rows(iterable_tags, template)
 	expected_output = "<table>{% for mydogs in user.dogs %}<tr><td>{mydogs.name}</td></tr><tr><td>{mydogs.name}</td></tr>{% endfor %}</table>"
 	assert result == expected_output
+
+# ------------------------------------------------------------------------------
+def test_render_preprocess_func(smores_instance):
+	def prepend_word(temp):
+		res = "word---" + temp
+		return res
+
+	template = "{user.name}"
+	result = smores_instance.render(dict(user=users[0]), template, pre_process=prepend_word)
+	assert result == "word---Leanne Graham"
+
+# ------------------------------------------------------------------------------
+def test_invalid_root_attr(smores_instance):
+	# def prepend_word(temp):
+	# 	res = "{{invalid_root.dog}}---" + temp
+	# 	return res
+	template = "{user.invalid_root.dog}"
+	result = smores_instance.render(dict(user=users[0]), template)
+	assert result == ''
+
+def test_invalid_root_attr_w_model(smores_instance):
+	with db_session:
+		template = "{user.invalidattr.dog}"
+		result = smores_instance.render(dict(user=User[1]), template)
+		assert result == ''
+
+
