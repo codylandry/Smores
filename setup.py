@@ -106,7 +106,7 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
-	extras = {
+	extras_require = {
 	    'test': test_deps,
 	},
     # $ setup.py publish support.
