@@ -1,6 +1,7 @@
 # Smores
 
 [![CircleCI](https://img.shields.io/circleci/project/github/codylandry/Smores.svg)](https://github.com/codylandry/Smores)
+[![Coverage Status](https://coveralls.io/repos/github/codylandry/Smores/badge.svg)](https://coveralls.io/github/codylandry/Smores)
 
 Smores allows you to specify a schema for user facing template features.  It leverages marshmallow (hence 'smores') to
 populate and transform data that is then rendered via jinja.  It has a parser that presents a more friendly syntax to 
