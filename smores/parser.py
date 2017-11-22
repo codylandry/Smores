@@ -1,4 +1,4 @@
-from pyparsing import Literal, Word, alphanums, Optional, Group, delimitedList, ParserElement, originalTextFor
+from pyparsing import Literal, Word, alphanums, Optional, Group, delimitedList, ParserElement, originalTextFor, NotAny, FollowedBy, OnlyOnce
 import inspect
 
 
@@ -53,6 +53,8 @@ def _adjust_indexes(tokens):
 	return str(int(tokens[0]) - 1)
 
 
+JINJA_TOKENS = Literal('%') | Literal('#') | Literal('{')
+
 ParserElement.setDefaultWhitespaceChars('')
 START = Literal('{').setParseAction(lambda: '{{')
 END = Literal('}').setParseAction(lambda: '}}')
@@ -61,8 +63,7 @@ LIST_INDEX = Group(Literal(':').suppress() + integer).setParseAction(_bracketize
 ATTR_NAME = Word(alphanums + '_').setParseAction(_lowerize)
 ATTR = Group(ATTR_NAME + Optional(LIST_INDEX))
 PATH = delimitedList(ATTR, delim='.').setParseAction(_combine_path).setWhitespaceChars(' ')
-BASE_TAG = Group(START + PATH + END)
-ORIGINAL_TAG = originalTextFor(BASE_TAG, True)
+BASE_TAG = Group(START + ~JINJA_TOKENS + PATH + END)
 
 def to_jinja_template(template_string, default=""):
 	"""
@@ -81,7 +82,7 @@ def to_jinja_template(template_string, default=""):
 	:return: a jinja version of the template
 	"""
 
-	TAG = Group(START + PATH + END).setParseAction(_get_jinja_tag(default)).setWhitespaceChars(' ')
+	TAG = BASE_TAG.setParseAction(_get_jinja_tag(default)).setWhitespaceChars(' ')
 
 	temp = TAG.transformString(template_string)
 	# temp = PATH.transformString(temp)

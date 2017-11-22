@@ -86,6 +86,24 @@ class RegisterTempSchemas(object):
 		self.smores_instance.remove_schemas(self.schemas)
 
 
+class SmoresEnvironment(Environment):
+	def __init__(self, fallback_value='', *args, **kwargs):
+		super(SmoresEnvironment, self).__init__(*args, **kwargs)
+		self.fallback_value = fallback_value
+
+	def getattr(self, obj, attribute):
+		try:
+			return super(SmoresEnvironment, self).getattr(obj, attribute)
+		except:
+			return self.fallback_value
+
+	def getitem(self, obj, attribute):
+		try:
+			return super(SmoresEnvironment, self).getitem(obj, attribute)
+		except:
+			return self.fallback_value
+
+
 class Smores(object):
 	def __init__(self, default_template_name='_default_template'):
 		"""
@@ -96,7 +114,7 @@ class Smores(object):
 		self._DEFAULT_TEMPLATE = default_template_name
 
 		# This jinja environment sets up a function to process variables into either serialized form or template
-		self.env = Environment(finalize=self._process_jinja_variables())
+		self.env = SmoresEnvironment(finalize=self._process_jinja_variables())
 		self.user_templates = {}
 		self._registered_schemas = set([])
 
