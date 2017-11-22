@@ -13,7 +13,7 @@ class TemplateString(fields.Field):
 	# TemplateStrings never map to a particular value on the obj, but rather, the whole object
 	_CHECK_ATTRIBUTE = False
 
-	def __init__(self, template_string, env=None, use_parser=False, *args, **kwargs):
+	def __init__(self, template_string, use_parser=False, *args, **kwargs):
 		"""
 		Renders template_string using jinja w/o parser
 		:param template_string: a jinja template
@@ -29,7 +29,6 @@ class TemplateString(fields.Field):
 
 		# TemplateStrings do not get 'loaded' by marshmallow
 		self.dump_only = True
-		self.env = env
 
 	def _serialize(self, _, __, obj):
 		"""
@@ -44,17 +43,18 @@ class TemplateString(fields.Field):
 		template_fields = [k for k, v in self.root.declared_fields.items() if isinstance(v, TemplateString)]
 
 		# serialize remaining fields of schema for template context
-		context = schema(exclude=template_fields).dump(obj).data  # TODO - cache this
+		context = schema(exclude=template_fields, context=self.context).dump(obj).data  # TODO - cache this
 
 		# return rendered template
+		env = self.context['env']
 
-		template = self.env.from_string(self.template_string)
+		template = env.from_string(self.template_string)
 		return template.render(**context)
 
 
 class TemplateFile(TemplateString):
 
-	def __init__(self, template_path, env=None, use_parser=False, *args, **kwargs):
+	def __init__(self, template_path, use_parser=False, *args, **kwargs):
 		"""
 		Reads file at template_path and renders template using jinja w/o parser
 		:param template_string: a jinja template
@@ -65,7 +65,7 @@ class TemplateFile(TemplateString):
 		with open(template_path, 'rb') as template_file:
 			template_string = template_file.read()
 		# pass it on to TemplateString
-		super(TemplateFile, self).__init__(template_string, env=env, use_parser=use_parser, *args, **kwargs)
+		super(TemplateFile, self).__init__(template_string, use_parser=use_parser, *args, **kwargs)
 
 
 class SmoresEnvironment(Environment):
@@ -271,19 +271,19 @@ class Smores(object):
 
 		return TagAutocompleteResponse(status, sorted(output))
 
-	def TemplateString(self, *args, **kwargs):
-		"""
-		Closure for instantiating the TemplateString field with the current env
-		:return: TemplateString Instance
-		"""
-		return TemplateString(*args, env=self.env, **kwargs)
-
-	def TemplateFile(self, *args, **kwargs):
-		"""
-		Closure for instantiating the TemplateFile field with the current env
-		:return: TemplateFile Instance
-		"""
-		return TemplateFile(*args, env=self.env, **kwargs)
+	# def TemplateString(self, *args, **kwargs):
+	# 	"""
+	# 	Closure for instantiating the TemplateString field with the current env
+	# 	:return: TemplateString Instance
+	# 	"""
+	# 	return TemplateString(*args, env=self.env, **kwargs)
+	#
+	# def TemplateFile(self, *args, **kwargs):
+	# 	"""
+	# 	Closure for instantiating the TemplateFile field with the current env
+	# 	:return: TemplateFile Instance
+	# 	"""
+	# 	return TemplateFile(*args, env=self.env, **kwargs)
 
 	def render(self, data, template_string, sub_templates=None, fallback_value='', pre_process=None):
 		"""
@@ -327,7 +327,7 @@ class Smores(object):
 		for k, v in data.items():
 			schema = get_schema(k)
 			if schema:
-				s = schema()
+				s = schema(context=dict(env=self.env))
 				context_dict[k.lower()] = s.dump(v).data
 
 		return template.render(**context_dict)
