@@ -328,7 +328,7 @@ class Smores(object):
 			schema = get_schema(k)
 			if schema:
 				s = schema()
-				context_dict[k] = s.dump(v).data
+				context_dict[k.lower()] = s.dump(v).data
 
 		return template.render(**context_dict)
 
