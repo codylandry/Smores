@@ -214,7 +214,7 @@ def test_subtemplates(smores_instance):
 # ------------------------------------------------------------------------------
 def test_repeating_table_rows_func(smores_instance):
 	iterable_tags = {
-		"{mydogs.name}": ("mydogs", "user.dogs")
+		"mydogs.*": ("mydogs", "user.dogs")
 	}
 
 	template = "<table><tr><td>{mydogs.name}</td></tr><tr><td>{mydogs.name}</td></tr></table>"
