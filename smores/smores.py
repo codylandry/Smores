@@ -260,8 +260,6 @@ class Smores(object):
 			output = current_node_field_names
 
 		status = 'VALID'
-		if not fragment:
-			status = 'INVALID'
 
 		if isinstance(current_node, (Schema,)):
 			if attr.lower() == current_node.__class__.__name__.lower():
