@@ -1,0 +1,7 @@
+API
+===
+
+
+.. automodule:: ../smores/smores
+    :members:
+        Smores
