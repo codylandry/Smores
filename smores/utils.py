@@ -1,5 +1,12 @@
-from bs4 import BeautifulSoup
 import re
+import inspect
+from marshmallow import Schema
+
+def get_module_schemas(module_):
+	"""Gets all schemas from module_"""
+	is_schema = lambda obj: inspect.isclass(obj) and issubclass(obj, (Schema, ))
+	schema_tuples = inspect.getmembers(module_, is_schema)
+	return [s[1] for s in schema_tuples]
 
 def loop_table_rows(iterable_tags, template_string):
 	"""
@@ -41,6 +48,7 @@ def loop_table_rows(iterable_tags, template_string):
 	:param template_string: jinja template string
 	:return: transformed template string
 	"""
+	from bs4 import BeautifulSoup
 	soup = BeautifulSoup(template_string, 'html.parser')
 	table = soup.find('table')
 

@@ -1,2 +1,2 @@
-from .smores import Smores, TagAutocompleteResponse
-__all__ = ['Smores', 'TagAutocompleteResponse']
+from .smores import Smores, TagAutocompleteResponse, TemplateString, TemplateFile
+__all__ = ['Smores', 'TagAutocompleteResponse', 'TemplateString', 'TemplateFile']

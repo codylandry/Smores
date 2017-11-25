@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields
+from smores import TemplateString, TemplateFile
 
 users = [
 	{
@@ -255,20 +256,20 @@ def register_schemas(smores):
 		city = fields.String()
 		zipcode = fields.String()
 		geo = fields.Nested(Coordinates)
-		_default_template = smores.TemplateString("{{street}}---{{city}}---{{geo}}")
+		_default_template = TemplateString("{{street}}---{{city}}---{{geo}}")
 
 	@smores.schema
 	class Company(Schema):
 		name = fields.String()
 		catchPhrase = fields.String()
 		bs = fields.String()
-		_default_template = smores.TemplateString("{{name}}---{{catchPhrase}}---{{bs}}")
+		_default_template = TemplateString("{{name}}---{{catchPhrase}}---{{bs}}")
 
 	@smores.schema
 	class Dog(Schema):
 		name = fields.String()
-		_default_template = smores.TemplateString("Name: {{ name }}")
-		with_greeting = smores.TemplateString('Hi, this is my dog {name}', use_parser=True)
+		_default_template = TemplateString("Name: {{ name }}")
+		with_greeting = TemplateString('Hi, this is my dog {name}', use_parser=True)
 
 	@smores.schema
 	class User(Schema):
@@ -280,6 +281,6 @@ def register_schemas(smores):
 		website = fields.String()
 		company = fields.Nested(Company)
 		dogs = fields.Nested(Dog, many=True)
-		_default_template = smores.TemplateString("""{{name}}---{{email}}""")
-		basic = smores.TemplateFile("tests/user_basic.html")
-		long_template = smores.TemplateString("{{name}}--{{phone}}--{{email}}--{{website}}--{{address.geo}}")
+		_default_template = TemplateString("""{{name}}---{{email}}""")
+		basic = TemplateFile("tests/user_basic.html")
+		long_template = TemplateString("{{name}}--{{phone}}--{{email}}--{{website}}--{{address.geo}}")

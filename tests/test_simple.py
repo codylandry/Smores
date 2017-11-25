@@ -1,10 +1,11 @@
 from smores import Smores, TagAutocompleteResponse, __version__
 from smores.parser import to_jinja_template
-from smores.utils import loop_table_rows
+from smores.utils import loop_table_rows, get_module_schemas
 from sample_data import users, register_schemas
 from create_db import User, db_session, select
 import pytest
 from marshmallow import Schema, fields
+import schemas_module
 
 
 
@@ -247,3 +248,19 @@ def test_invalid_root_attr_w_model(smores_instance):
 		template = "{user.invalidattr.dog}"
 		result = smores_instance.render(dict(user=User[1]), template)
 		assert result == ''
+
+# ------------------------------------------------------------------------------
+def test_get_module_schemas():
+	schemas = get_module_schemas(schemas_module)
+	smores = Smores()
+	smores.add_schemas(schemas)
+	res = smores.render(dict(user=users[0]), "{user.name}")
+	assert res == 'Leanne Graham'
+
+# ------------------------------------------------------------------------------
+def test_add_module_schemas():
+	smores = Smores()
+	smores.add_module_schemas(schemas_module)
+	res = smores.render(dict(user=users[0]), "{user.name}")
+	assert res == 'Leanne Graham'
+
