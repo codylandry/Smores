@@ -11,16 +11,16 @@ TagAutocompleteResponse = namedtuple('TagAutocompleteResponse', ('status', 'resu
 
 
 class TemplateString(fields.Field):
+	"""
+	Renders template_string using jinja w/o parser
+	:param string template_string: a jinja template
+	:param Environment env: jinja environment
+	:param bool use_parser: flag for whether to use the smores parser
+	"""
 	# TemplateStrings never map to a particular value on the obj, but rather, the whole object
 	_CHECK_ATTRIBUTE = False
 
 	def __init__(self, template_string, use_parser=False, *args, **kwargs):
-		"""
-		Renders template_string using jinja w/o parser
-		:param template_string: a jinja template
-		:param env: jinja environment
-		:param use_parser: flag for whether to use the smores parser
-		"""
 		super(TemplateString, self).__init__(*args, **kwargs)
 
 		# the template string to be rendered

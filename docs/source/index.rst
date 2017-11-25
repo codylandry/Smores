@@ -15,6 +15,9 @@ Smores
    :maxdepth: 3
    :caption: Contents:
 
+   modules
+   smores
+
 
 Indices and tables
 ==================
