@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
+  <meta name="author" content="Cody Landry">
+  <link rel="shortcut icon" href="./img/favicon.ico">
+  <title>Smores - Smores</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="./css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="./css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="./css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Smores";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = "/";
+  </script>
+  
+  <script src="./js/jquery-2.1.1.min.js"></script>
+  <script src="./js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="./js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> Smores</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href=".">Smores</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#smores">Smores</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#todos">TODOS</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">Smores</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Smores</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/codylandry/Smores/edit/master/docs/index.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="smores">Smores</h1>
+<p><a href="https://circleci.com/gh/codylandry/Smores"><img alt="CircleCI" src="https://img.shields.io/circleci/project/github/codylandry/Smores.svg" /></a>
+<a href="https://coveralls.io/github/codylandry/Smores?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/codylandry/Smores/badge.svg?branch=master" /></a></p>
+<p>Smores allows you to specify a schema for user facing template features.  It leverages marshmallow (hence 'smores') to
+populate and transform data that is then rendered via jinja.  It has a parser that presents a more friendly syntax to 
+users (ex. {user.addresses:1.street}).  It also includes an autocomplete method that gives you intellisense style 
+options given a tag fragment.  </p>
+<p>Smores provides two Marshmallow field types called TemplateString and TemplateFile.  Templates defined in these fields
+are scoped to that schema and it's descendants.  Each schema can have a _default_template that, if defined, will what
+is inserted if the associated tag ends with that schema.  For example: typing {user.address} will render the _default_template
+for the Address schema.  You can define other template attributes as well.  For example, see the 'google_link' attribute
+of the Address schema below.  Typing {user.address.google_link} will populate and insert that link.  </p>
+<p>smores.tag_autocomplete is a method where you can provide a tag 'fragment' and it will return the possible options below that.
+For example:</p>
+<pre><code>for the schemas below
+
+smores.tag_autocomplete("") returns ['user', 'address', 'coordinates']
+smores.tag_autocomplete("user") returns ['id', 'name', 'email', 'address', '_default_template']
+smores.tag_autocomplete("user.address.geo") returns ['lat', 'lng', '_default_template']
+
+Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
+shouldn't be appended to the tag in the ui.
+</code></pre>
+<pre><code class="python">from smores import Smores
+from marshmallow import Schema, fields
+
+# instantiate a smores instance
+smores = Smores()
+
+# smores.schema registers the schema with the instance
+@smores.schema
+class Coordinates(Schema):
+    lat = fields.Decimal()
+    lng = fields.Decimal()
+    _default_template = smores.TemplateString(&quot;{{lat}},{{lng}}&quot;)
+
+@smores.schema
+class Address(Schema):
+    street = fields.String()
+    suite = fields.String()
+    city = fields.String()
+    state = fields.String()
+    zipcode = fields.String()
+    coordinates = fields.Nested(Coordinates)
+    google_link = smores.TemplateString('&lt;a href=&quot;https://maps.google.com/?ll={{coordinates}}&quot;&gt;View Map&lt;/a&gt;')
+    _default_template = smores.TemplateString(&quot;&quot;&quot;
+        &lt;div&gt;{{&lt;a href=&quot;https://maps.google.com/?ll={{coordinates}}&quot;&gt;View Map&lt;/a&gt;}}&lt;/div&gt;
+        &lt;div&gt;{{street}} -- {{suite}}&lt;/div&gt;
+        &lt;div&gt;{{city}}, {{state}} {{zipcode}}&lt;/div&gt;
+    &quot;&quot;&quot;)
+
+@smores.schema
+class User(Schema):
+    id = fields.Integer()
+    name = fields.String()
+    email = fields.Email()
+    address = fields.Nested(Address)
+    _default_template = smores.TemplateString(&quot;&quot;&quot;
+        &lt;div&gt;{{name}}&lt;/div&gt;
+        &lt;div&gt;E: {{email}}&lt;/div&gt;
+        &lt;div&gt;{{address}}&lt;/div&gt;
+    &quot;&quot;&quot;)
+
+
+# provide data to the render function
+data = {
+    &quot;user&quot;: {
+        &quot;id&quot;: 1,
+        &quot;name&quot;: &quot;Leanne Graham&quot;,
+        &quot;username&quot;: &quot;Bret&quot;,
+        &quot;email&quot;: &quot;Sincere@april.biz&quot;,
+        &quot;phone&quot;: &quot;1-770-736-8031 x56442&quot;,
+        &quot;address&quot;: {
+            &quot;street&quot;: &quot;Kulas Light&quot;,
+            &quot;suite&quot;: &quot;Apt. 556&quot;,
+            &quot;city&quot;: &quot;Gwenborough&quot;,
+            &quot;state&quot;: &quot;MD&quot;,
+            &quot;zipcode&quot;: &quot;92998-3874&quot;,
+            &quot;coordinates&quot;: {
+                &quot;lat&quot;: &quot;36.065934&quot;,
+                &quot;lng&quot;: &quot;-79.791414&quot;
+            }
+        },
+    }
+}
+
+# provide user created template
+user_template = &quot;&quot;&quot;
+    &lt;h3&gt;Hi, {user.name}!&lt;/h3&gt;
+    &lt;p&gt;Your Info:&lt;/p&gt;
+    {user}
+&quot;&quot;&quot;
+
+# render the output
+print smores.render(data, user_template)
+
+# output --&gt;
+# &lt;h3&gt;Hi, Leanne Graham!&lt;/h3&gt;
+# &lt;p&gt;Your Info:&lt;/p&gt;
+# 
+# &lt;div&gt;Leanne Graham&lt;/div&gt;
+# &lt;div&gt;E: Sincere@april.biz&lt;/div&gt;
+# &lt;div&gt;
+#     &lt;div&gt;&lt;a href=&quot;https://maps.google.com/?ll=36.065934,-79.791414&quot;&gt;View Map&lt;/a&gt;&lt;/div&gt;
+#     &lt;div&gt;Kulas Light -- Apt. 556&lt;/div&gt;
+#     &lt;div&gt;Gwenborough, MD 92998-3874&lt;/div&gt;
+# &lt;/div&gt;
+
+</code></pre>
+
+<h3 id="todos">TODOS</h3>
+<ul>
+<li>[ ] Publish on PyPI</li>
+<li>[ ] Make parser pluggable to support different tag syntax styles</li>
+<li>[ ] Add template analyzer to get list of required data</li>
+<li>[X] tag_autocomplete should have only and exclude</li>
+<li>[X] Add test that use model classes from an orm (probably use Pony and sqlite)</li>
+<li>[X] Add CircleCi integration for PR's</li>
+<li>[ ] Improve Documentation</li>
+<li>[ ] Add option to not use parser</li>
+</ul>
+              
+            </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/codylandry/Smores/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+    </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="./js/theme.js"></script>
+      <script src="./search/require.js"></script>
+      <script src="./search/search.js"></script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 0.17.2
+Build Date UTC : 2017-11-27 22:41:50
+-->
