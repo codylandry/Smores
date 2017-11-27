@@ -13,11 +13,11 @@ TagAutocompleteResponse = namedtuple('TagAutocompleteResponse', ('status', 'resu
 class TemplateString(fields.Field):
 	"""
 	Renders template_string using jinja w/o parser
+
 	:param string template_string: a jinja template
 	:param Environment env: jinja environment
 	:param bool use_parser: flag for whether to use the smores parser
 	"""
-	# TemplateStrings never map to a particular value on the obj, but rather, the whole object
 	_CHECK_ATTRIBUTE = False
 
 	def __init__(self, template_string, use_parser=False, *args, **kwargs):
@@ -82,12 +82,13 @@ class SmoresEnvironment(Environment):
 
 
 class Smores(object):
+	"""
+	Provides a method of defining a schema for string templates.  Presents a tag syntax
+	easy enough for end users to use.
+
+	:param string default_template_name: The name you'd like to use for default schema templates
+	"""
 	def __init__(self, default_template_name='_default_template'):
-		"""
-		Provides a method of defining a schema for string templates.  Presents a tag syntax
-		easy enough for end users to use.
-		:param default_template_name: The name you'd like to use for default schema templates
-		"""
 		self._DEFAULT_TEMPLATE = default_template_name
 
 		# This jinja environment sets up a function to process variables into either serialized form or template
@@ -137,16 +138,24 @@ class Smores(object):
 
 	@property
 	def schemas(self):
+		"""
+		:return: list of registered schemas
+		"""
 		return list(self._registered_schemas)
 
 	def add_module_schemas(self, module_):
+		"""
+		Adds all Schema classes found in module\_
+
+		:param module module\_: Gets schema classes from this module
+	    """
 		self.add_schemas(get_module_schemas(module_))
 
 	def add_schemas(self, schemas):
 		"""
-		Registers schemas from instance
-		:param schemas: single schema or list of schemas
-		:return: None
+		Registers schema(s)
+
+		:param schemas: schema|list of schemas
 		"""
 		if not isinstance(schemas, (list,)):
 			schemas = [schemas]
@@ -158,9 +167,9 @@ class Smores(object):
 
 	def remove_schemas(self, schemas):
 		"""
-		Unregisters schemas from instance
-		:param schemas: single schema or list of schemas
-		:return: None
+		Unregisters schema(s)
+
+		:param schemas: schema|list of schemas
 		"""
 		if not isinstance(schemas, (list,)):
 			schemas = [schemas]
@@ -173,7 +182,8 @@ class Smores(object):
 	def schema(self, schema):
 		"""
 		A decorator that registers a marshmallow schema
-		:param schema: schema class
+
+		:param Schema schema: schema class object
 		:return: schema
 		"""
 		self.add_schemas(schema)
@@ -182,11 +192,11 @@ class Smores(object):
 	def autocomplete(self, fragment, only=None, exclude=None):
 		"""
 		Gets the available options for a given tag fragment
-		:param base_schema: The schema the template was written for
-		:param fragment: a tag fragment ex: user.addresses
-		:param only: a list of schemas that should be included
-		:param exclude: a list of schemas that should be excluded
-		:return: a list of 'tab completion' results based on the tag fragment
+
+		:param string fragment: a tag fragment ex: user.addresses
+		:param list only: a list of schemas that should be included
+		:param list exclude: a list of schemas that should be excluded
+		:return: TagAutocomplete result
 		"""
 		fragment = fragment.strip()
 		sort_and_lower = lambda l: sorted([getattr(l, i) for i in l])
