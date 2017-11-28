@@ -9,4 +9,32 @@
     </url>
     
 
+    
+        
+    <url>
+     <loc>/api/smores/</loc>
+     <lastmod>2017-11-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/api/templateString/</loc>
+     <lastmod>2017-11-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/api/templateFile/</loc>
+     <lastmod>2017-11-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/api/utils/</loc>
+     <lastmod>2017-11-27</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    
+
 </urlset>
