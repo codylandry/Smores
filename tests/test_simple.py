@@ -1,4 +1,4 @@
-from smores import Smores, TagAutocompleteResponse, __version__
+from smores import Smores, AutocompleteResponse, __version__
 from smores.parser import to_jinja_template
 from smores.utils import loop_table_rows, get_module_schemas
 from sample_data import users, register_schemas
@@ -116,21 +116,21 @@ def test_bad_render_inputs(smores_instance, input):
 
 # ------------------------------------------------------------------------------
 autocomplete_cases = [
-	("", TagAutocompleteResponse('INVALID', ['address', 'company', 'coordinates', 'dog', 'user'])),
-	("user", TagAutocompleteResponse('VALID', ['_default_template', 'address', 'basic', 'company',
+	("", AutocompleteResponse('INVALID', ['address', 'company', 'coordinates', 'dog', 'user'])),
+	("user", AutocompleteResponse('VALID', ['_default_template', 'address', 'basic', 'company',
 	                                           'dogs', 'email', 'id', 'long_template', 'name', 'phone', 'website'])),
-	("u", TagAutocompleteResponse('INVALID', ['user'])),
-	("user.a", TagAutocompleteResponse('INVALID', ['address'])),
-	("user.dogs", TagAutocompleteResponse('INVALID', [':1'])),
-	("user.dogs:1", TagAutocompleteResponse('INVALID', ['_default_template', 'name', 'with_greeting'])),
-	("user.dogs:1.name", TagAutocompleteResponse('VALID', [])),
-	("coordinates", TagAutocompleteResponse('INVALID', ['lat', 'lng'])),
-	("address.geo", TagAutocompleteResponse('INVALID', ['lat', 'lng'])),
-	("some.garbage", TagAutocompleteResponse('INVALID', [])),
-	("user.garbage", TagAutocompleteResponse('INVALID', [])),
-	("user.address.garbage", TagAutocompleteResponse('INVALID', [])),
-	("user.aliases.garbage", TagAutocompleteResponse('INVALID', [])),
-	("user.aliases:1.garbage", TagAutocompleteResponse('INVALID', [])),
+	("u", AutocompleteResponse('INVALID', ['user'])),
+	("user.a", AutocompleteResponse('INVALID', ['address'])),
+	("user.dogs", AutocompleteResponse('INVALID', [':1'])),
+	("user.dogs:1", AutocompleteResponse('INVALID', ['_default_template', 'name', 'with_greeting'])),
+	("user.dogs:1.name", AutocompleteResponse('VALID', [])),
+	("coordinates", AutocompleteResponse('INVALID', ['lat', 'lng'])),
+	("address.geo", AutocompleteResponse('INVALID', ['lat', 'lng'])),
+	("some.garbage", AutocompleteResponse('INVALID', [])),
+	("user.garbage", AutocompleteResponse('INVALID', [])),
+	("user.address.garbage", AutocompleteResponse('INVALID', [])),
+	("user.aliases.garbage", AutocompleteResponse('INVALID', [])),
+	("user.aliases:1.garbage", AutocompleteResponse('INVALID', [])),
 ]
 
 @pytest.mark.parametrize("input, output", autocomplete_cases)
@@ -138,10 +138,10 @@ def test_autocomplete(smores_instance, input, output):
 	assert smores_instance.autocomplete(input) == output
 
 autocomplete_only_cases = [
-	('user', TagAutocompleteResponse('INVALID', [])),
-	('u', TagAutocompleteResponse('INVALID', [])),
-	('a', TagAutocompleteResponse('INVALID', ['address'])),
-	('address.geo', TagAutocompleteResponse('INVALID', ['lat', 'lng'])),
+	('user', AutocompleteResponse('INVALID', [])),
+	('u', AutocompleteResponse('INVALID', [])),
+	('a', AutocompleteResponse('INVALID', ['address'])),
+	('address.geo', AutocompleteResponse('INVALID', ['lat', 'lng'])),
 ]
 
 @pytest.mark.parametrize("input, output", autocomplete_only_cases)
@@ -150,11 +150,11 @@ def test_autocomplete_only(smores_instance, input, output):
 	assert result == output
 
 autocomplete_exclude_cases = [
-	('user',  TagAutocompleteResponse('VALID', ['_default_template', 'address', 'basic', 'company',
+	('user', AutocompleteResponse('VALID', ['_default_template', 'address', 'basic', 'company',
 	                                           'dogs', 'email', 'id', 'long_template', 'name', 'phone', 'website'])),
-	('u', TagAutocompleteResponse('INVALID', ['user'])),
-	('a', TagAutocompleteResponse('INVALID', [])),
-	('address.geo', TagAutocompleteResponse('INVALID', [])),
+	('u', AutocompleteResponse('INVALID', ['user'])),
+	('a', AutocompleteResponse('INVALID', [])),
+	('address.geo', AutocompleteResponse('INVALID', [])),
 ]
 
 @pytest.mark.parametrize("input, output", autocomplete_exclude_cases)
@@ -173,7 +173,7 @@ def test_temp_schemas_single(smores_instance):
 	template = "{user}--{event.tech}"
 	expected_outcome = "Leanne Graham---Sincere@april.biz--Tom Johnson"
 
-	with smores_instance.temp_schemas(Event):
+	with smores_instance.with_schemas(Event):
 		assert smores_instance.render(data, template) == expected_outcome
 
 def test_temp_schemas_list(smores_instance):
@@ -186,7 +186,7 @@ def test_temp_schemas_list(smores_instance):
 	template = "{user}--{event.tech}"
 	expected_outcome = "Leanne Graham---Sincere@april.biz--Tom Johnson"
 
-	with smores_instance.temp_schemas([Event]):
+	with smores_instance.with_schemas([Event]):
 		assert smores_instance.render(data, template) == expected_outcome
 
 # ------------------------------------------------------------------------------

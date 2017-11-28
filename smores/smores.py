@@ -7,16 +7,17 @@ from contextlib import contextmanager
 from .utils import get_module_schemas
 
 
-TagAutocompleteResponse = namedtuple('TagAutocompleteResponse', ('status', 'result'))
+AutocompleteResponse = namedtuple('AutocompleteResponse', ('tagStatus', 'options'))
 
 
 class TemplateString(fields.Field):
 	"""
 	Renders template_string using jinja w/o parser
 
-	:param string template_string: a jinja template
-	:param Environment env: jinja environment
-	:param bool use_parser: flag for whether to use the smores parser
+	# Arguments:
+		template_string (string): a jinja template
+		env (Environment): jinja environment
+		use_parser (bool): flag for whether to use the smores parser
 	"""
 	_CHECK_ATTRIBUTE = False
 
@@ -54,14 +55,16 @@ class TemplateString(fields.Field):
 
 
 class TemplateFile(TemplateString):
+	"""
+	Reads file at template_path and renders template using jinja w/o parser
+
+	# Arguments:
+		template_string (string): a jinja template
+		env (Environment): jinja environment
+		use_parser (bool): flag for whether to use the smores parser
+	"""
 
 	def __init__(self, template_path, use_parser=False, *args, **kwargs):
-		"""
-		Reads file at template_path and renders template using jinja w/o parser
-		:param template_string: a jinja template
-		:param env: jinja environment
-		:param use_parser: flag for whether to use the smores parser
-		"""
 		# grab the template file
 		with open(template_path, 'rb') as template_file:
 			template_string = template_file.read()
@@ -86,7 +89,8 @@ class Smores(object):
 	Provides a method of defining a schema for string templates.  Presents a tag syntax
 	easy enough for end users to use.
 
-	:param string default_template_name: The name you'd like to use for default schema templates
+	# Arguments:
+		default_template_name (str): The name you'd like to use for default schema templates
 	"""
 	def __init__(self, default_template_name='_default_template'):
 		self._DEFAULT_TEMPLATE = default_template_name
@@ -124,13 +128,23 @@ class Smores(object):
 		return process
 
 	@contextmanager
-	def temp_schemas(self, schemas):
+	def with_schemas(self, schemas):
 		"""
-		Returns a context manager that temporarily registers 'schemas'
-		Useful for adding some schemas for a render call without polluting/conflicting
-		with existing schemas
-		:param schemas:  single schema or list of schemas
-		:return: RegisterTempSchemas instance
+		Context manager that registers schemas temporarily
+
+		# Arguments:
+			schemas (list|Schema):  single schema or list of schemas
+
+		# Example:
+			class Event(Schema):
+				time = fields.DateTime()
+				description = fields.String()
+
+			with smores.with_schemas(Event):
+				# Event schema available here
+				smores.render(someDate, someTemplate)
+
+			# Event schema is removed on exit
 		"""
 		self.add_schemas(schemas)
 		yield
@@ -139,15 +153,19 @@ class Smores(object):
 	@property
 	def schemas(self):
 		"""
-		:return: list of registered schemas
+		Property that returns a list of registered schemas
+
+		# Returns:
+			list: Currently registered schemas
 		"""
 		return list(self._registered_schemas)
 
 	def add_module_schemas(self, module_):
 		"""
-		Adds all Schema classes found in module\_
+		Adds all Schema classes found in module_
 
-		:param module module\_: Gets schema classes from this module
+		# Arguments:
+			module_ (module): Registers schema classes from this module
 	    """
 		self.add_schemas(get_module_schemas(module_))
 
@@ -155,7 +173,8 @@ class Smores(object):
 		"""
 		Registers schema(s)
 
-		:param schemas: schema|list of schemas
+		# Arguments:
+			schemas (Schema|list): schemas to register
 		"""
 		if not isinstance(schemas, (list,)):
 			schemas = [schemas]
@@ -169,7 +188,8 @@ class Smores(object):
 		"""
 		Unregisters schema(s)
 
-		:param schemas: schema|list of schemas
+		# Arguments:
+			schemas (Schema|list): schemas to unregister
 		"""
 		if not isinstance(schemas, (list,)):
 			schemas = [schemas]
@@ -181,22 +201,44 @@ class Smores(object):
 
 	def schema(self, schema):
 		"""
-		A decorator that registers a marshmallow schema
+		A class decorator that registers a marshmallow schema
 
-		:param Schema schema: schema class object
-		:return: schema
+		# Example:
+			smores = Smores()
+
+			@smores.schema
+			class User(Schema):
+				name = fields.String()
+				email = fields.Email()
 		"""
 		self.add_schemas(schema)
 		return schema
 
 	def autocomplete(self, fragment, only=None, exclude=None):
 		"""
-		Gets the available options for a given tag fragment
+		Evaluates a tag fragment, returns a named tuple with the status of the fragment
+		as it is, and possible options that could be used to expand/add to the fragment.
 
-		:param string fragment: a tag fragment ex: user.addresses
-		:param list only: a list of schemas that should be included
-		:param list exclude: a list of schemas that should be excluded
-		:return: TagAutocomplete result
+		# Arguments:
+			fragment (string): a tag fragment ex: user.addresses
+			only (list): a list of schemas that should be included
+			exclude (list): a list of schemas that should be excluded
+
+		# Returns:
+			AutocompleteResponse: NamedTuple with both the status of the current tag fragment as well as possible options
+
+		# Example:
+		    >>> smores.autocomplete("")
+		    AutocompleteResponse(tagStatus='INVALID', options=['address', 'coordinates', 'user'])
+
+		    >>> smores.autocomplete('user')
+		    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'address', 'email', 'id', 'name'])
+
+		    >>> smores.autocomplete('us')
+		    AutocompleteResponse(tagStatus='INVALID', options=['user'])
+
+		    >>> smores.autocomplete("user.address.coordinates")
+		    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'lat', 'lng'])
 		"""
 		fragment = fragment.strip()
 		sort_and_lower = lambda l: sorted([getattr(l, i) for i in l])
@@ -213,7 +255,7 @@ class Smores(object):
 
 		# return allowed schemas if fragment is blank
 		if not fragment:
-			return TagAutocompleteResponse("INVALID", sorted([s.__name__.lower() for s in allowed_root_schemas]))
+			return AutocompleteResponse("INVALID", sorted([s.__name__.lower() for s in allowed_root_schemas]))
 
 		# parse fragment into tokens
 		attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
@@ -228,11 +270,11 @@ class Smores(object):
 		elif len(attrs) == 1:
 			result = [s.__name__.lower() for s in allowed_root_schemas
 			          if s.__name__.lower().startswith(attrs[0].lower())]
-			return TagAutocompleteResponse("INVALID", sorted(result))
+			return AutocompleteResponse("INVALID", sorted(result))
 
 		# otherwise, it's an invalid fragment
 		else:
-			return TagAutocompleteResponse("INVALID", [])
+			return AutocompleteResponse("INVALID", [])
 
 		get_fields = lambda n: map(lambda s: s.lower(), n.declared_fields.keys())
 		current_node_field_names = get_fields(current_node)
@@ -283,21 +325,22 @@ class Smores(object):
 		else:
 			output = []
 
-		return TagAutocompleteResponse(status, sorted(output))
+		return AutocompleteResponse(status, sorted(output))
 
 	def render(self, data, template_string, sub_templates=None, fallback_value='', pre_process=None):
 		"""
 		Recursively populates the 'template_string' with data gathered from dumping 'data' through the Marshmallow 'schema'.
 		Variables are evaluated and will return the '_default_template' if one exists.  Prettifies end result.
 
-		:param data: data to be dumped via the 'schema'
-					 (likely an ORM model instance) accepts both objects and dicts/lists
-		:param template_string: text generated by end-users
-		:param sub_templates: list of sub_templates [(<name>: <template_string>)]
-		:param fallback_value: either string or function returning a
-							   string to serve as default value for tag attrs that cannot be resolved
-		:param pre_process: function that modifies the parsed version of the template
-		:return: rendered template
+		# Arguments
+			data (dict): data to be dumped via the 'schema' (likely an ORM model instance) accepts both objects and dicts/lists
+			template_string (str): text generated by end-users
+			sub_templates (dict): mapping of subtemplate tag to expanded sub template string
+			fallback_value (str|function|None): either string or function returning a string to serve as default value for tag attrs that cannot be resolved
+			pre_process (function): function that modifies the parsed version of the template
+
+		# Returns:
+			string: rendered template
 		"""
 		assert not sub_templates or isinstance(sub_templates, (dict,)), \
 			'sub_templates must be a dict of <tag>: <subtemplate>'

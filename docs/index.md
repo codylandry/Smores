@@ -1,6 +1,6 @@
 # Smores
 
-[![CircleCI](https://img.shields.io/circleci/project/github/codylandry/Smores.svg)](https://circleci.com/gh/codylandry/Smores)
+[![CircleCI branch](https://img.shields.io/circleci/project/github/RedSparr0w/node-csgo-parser/master.svg)]()
 [![Coverage Status](https://coveralls.io/repos/github/codylandry/Smores/badge.svg?branch=master)](https://coveralls.io/github/codylandry/Smores?branch=master)
 
 Smores allows you to specify a schema for user facing template features.  It leverages marshmallow (hence 'smores') to
@@ -16,19 +16,9 @@ of the Address schema below.  Typing {user.address.google_link} will populate an
 
 smores.tag_autocomplete is a method where you can provide a tag 'fragment' and it will return the possible options below that.
 For example:
-    
-    for the schemas below
-
-    smores.tag_autocomplete("") returns ['user', 'address', 'coordinates']
-    smores.tag_autocomplete("user") returns ['id', 'name', 'email', 'address', '_default_template']
-    smores.tag_autocomplete("user.address.geo") returns ['lat', 'lng', '_default_template']
-    
-    Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
-    shouldn't be appended to the tag in the ui.
-
-
+   
 ```python
-from smores import Smores
+from smores import Smores, TemplateString
 from marshmallow import Schema, fields
 
 # instantiate a smores instance
@@ -39,7 +29,7 @@ smores = Smores()
 class Coordinates(Schema):
     lat = fields.Decimal()
     lng = fields.Decimal()
-    _default_template = smores.TemplateString("{{lat}},{{lng}}")
+    _default_template = TemplateString("{{lat}},{{lng}}")
 
 @smores.schema
 class Address(Schema):
@@ -49,8 +39,8 @@ class Address(Schema):
     state = fields.String()
     zipcode = fields.String()
     coordinates = fields.Nested(Coordinates)
-    google_link = smores.TemplateString('<a href="https://maps.google.com/?ll={{coordinates}}">View Map</a>')
-    _default_template = smores.TemplateString("""
+    google_link = TemplateString('<a href="https://maps.google.com/?ll={{coordinates}}">View Map</a>')
+    _default_template = TemplateString("""
         <div>{{<a href="https://maps.google.com/?ll={{coordinates}}">View Map</a>}}</div>
         <div>{{street}} -- {{suite}}</div>
         <div>{{city}}, {{state}} {{zipcode}}</div>
@@ -62,13 +52,35 @@ class User(Schema):
     name = fields.String()
     email = fields.Email()
     address = fields.Nested(Address)
-    _default_template = smores.TemplateString("""
+    _default_template = TemplateString("""
         <div>{{name}}</div>
         <div>E: {{email}}</div>
         <div>{{address}}</div>
     """)
+``` 
+   
+   
+```python
+    # for the schemas above, simply invoke the autocomplete method with a tag fragment
+    
+    >>> smores.autocomplete("")
+    AutocompleteResponse(tagStatus='INVALID', options=['address', 'coordinates', 'user'])
+    
+    >>> smores.autocomplete('user')
+    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'address', 'email', 'id', 'name'])
+    
+    >>> smores.autocomplete('us')
+    AutocompleteResponse(tagStatus='INVALID', options=['user'])
+    
+    >>> smores.autocomplete("user.address.coordinates")
+    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'lat', 'lng'])
+    
+    # Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
+    # shouldn't be appended to the tag in the ui.
+``` 
 
 
+```python
 # provide data to the render function
 data = {
     "user": {
@@ -112,16 +124,4 @@ print smores.render(data, user_template)
 #     <div>Kulas Light -- Apt. 556</div>
 #     <div>Gwenborough, MD 92998-3874</div>
 # </div>
-
 ```
-
-### TODOS
-
-- [ ] Publish on PyPI
-- [ ] Make parser pluggable to support different tag syntax styles
-- [ ] Add template analyzer to get list of required data
-- [X] tag_autocomplete should have only and exclude
-- [X] Add test that use model classes from an orm (probably use Pony and sqlite)
-- [X] Add CircleCi integration for PR's
-- [ ] Improve Documentation
-- [ ] Add option to not use parser

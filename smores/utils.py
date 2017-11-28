@@ -3,7 +3,15 @@ import inspect
 from marshmallow import Schema
 
 def get_module_schemas(module_):
-	"""Gets all schemas from module_"""
+	"""
+	Returns list of all classes found in the module_
+
+	# Arguments:
+		module_ (module): where to find schemas
+
+	# Returns:
+		list: schemas found in module_
+	"""
 	is_schema = lambda obj: inspect.isclass(obj) and issubclass(obj, (Schema, ))
 	schema_tuples = inspect.getmembers(module_, is_schema)
 	return [s[1] for s in schema_tuples]
@@ -16,6 +24,13 @@ def loop_table_rows(iterable_tags, template_string):
 	a jinja for loop using the iterator, iterable tuple from 'iterable_tags'
 	Example:
 
+	# Arguments:
+		iterable_tags (dict): mapping of
+		template_string (str): jinja template string
+	# Returns:
+		string: transformed template string
+	# Example:
+	```python
 	iterable_tags = {
 		"mydogs.*": ("mydogs", "user.dogs")
 	}
@@ -31,8 +46,7 @@ def loop_table_rows(iterable_tags, template_string):
 		</table>
 	'''
 
-	# becomes:
-
+	>>> smores.utils.loop_table_rows(input)
 	<table>
 		{% for mydogs in user.dogs %}
 			<tr>
@@ -43,10 +57,7 @@ def loop_table_rows(iterable_tags, template_string):
 			</tr>
 		{% endfor %}
 	</table>
-
-	:param iterable_tags: a dict {<tag to match>: tuple(iterator: string, iterable: string)}
-	:param template_string: jinja template string
-	:return: transformed template string
+	```
 	"""
 	from bs4 import BeautifulSoup
 	soup = BeautifulSoup(template_string, 'html.parser')

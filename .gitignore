@@ -9,3 +9,4 @@ _dev.py
 smores.egg-info/
 .coverage
 site/
+_build/
