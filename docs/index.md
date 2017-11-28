@@ -1,5 +1,6 @@
 # Smores
-
+[![PyPI](https://img.shields.io/pypi/v/smores.svg)]()
+[![PyPI](https://img.shields.io/pypi/l/smores.svg)]()
 [![CircleCI branch](https://img.shields.io/circleci/project/github/codylandry/Smores/master.svg)]()
 [![Coverage Status](https://coveralls.io/repos/github/codylandry/Smores/badge.svg?branch=master)](https://coveralls.io/github/codylandry/Smores?branch=master)
 
