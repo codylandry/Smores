@@ -18,13 +18,7 @@
     </url>
         
     <url>
-     <loc>/api/templateString/</loc>
-     <lastmod>2017-11-27</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>/api/templateFile/</loc>
+     <loc>/api/fields/</loc>
      <lastmod>2017-11-27</lastmod>
      <changefreq>daily</changefreq>
     </url>

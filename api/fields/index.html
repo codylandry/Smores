@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../../img/favicon.ico">
-  <title>TemplateFile - Smores</title>
+  <title>Fields - Smores</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "TemplateFile";
-    var mkdocs_page_input_path = "api/templateFile.md";
-    var mkdocs_page_url = "/api/templateFile/";
+    var mkdocs_page_name = "Fields";
+    var mkdocs_page_input_path = "api/fields.md";
+    var mkdocs_page_url = "/api/fields/";
   </script>
   
   <script src="../../js/jquery-2.1.1.min.js"></script>
@@ -60,13 +60,9 @@
                     
     <a class="" href="../smores/">Smores</a>
                 </li>
-                <li class="">
-                    
-    <a class="" href="../templateString/">TemplateString</a>
-                </li>
                 <li class=" current">
                     
-    <a class="current" href="./">TemplateFile</a>
+    <a class="current" href="./">Fields</a>
     <ul class="subnav">
             
     </ul>
@@ -104,10 +100,10 @@
         
       
     
-    <li>TemplateFile</li>
+    <li>Fields</li>
     <li class="wy-breadcrumbs-aside">
       
-        <a href="https://github.com/codylandry/Smores/edit/master/docs/api/templateFile.md"
+        <a href="https://github.com/codylandry/Smores/edit/master/docs/api/fields.md"
           class="icon icon-github"> Edit on GitHub</a>
       
     </li>
@@ -117,9 +113,27 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="smores.smores.TemplateFile">TemplateFile</h1>
+                <h1 id="smores.smores.TemplateString">TemplateString</h1>
+
+<pre><code class="python">TemplateString(self, template_string, use_parser=False, *args, **kwargs)
+</code></pre>
+
+<p>Renders template_string using jinja w/o parser</p>
+<p><strong>Arguments:</strong></p>
+<pre><code>template_string (string): a jinja template
+env (Environment): jinja environment
+use_parser (bool): flag for whether to use the smores parser
+</code></pre>
+<h1 id="smores.smores.TemplateFile">TemplateFile</h1>
 
 <pre><code class="python">TemplateFile(self, template_path, use_parser=False, *args, **kwargs)
+</code></pre>
+
+<p>Reads file at template_path and renders template using jinja w/o parser</p>
+<p><strong>Arguments:</strong></p>
+<pre><code>template_string (string): a jinja template
+env (Environment): jinja environment
+use_parser (bool): flag for whether to use the smores parser
 </code></pre>
               
             </div>
@@ -131,7 +145,7 @@
         <a href="../utils/" class="btn btn-neutral float-right" title="Utils">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../templateString/" class="btn btn-neutral" title="TemplateString"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../smores/" class="btn btn-neutral" title="Smores"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -159,7 +173,7 @@
           <a href="https://github.com/codylandry/Smores/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href="../templateString/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../smores/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
         <span style="margin-left: 15px"><a href="../utils/" style="color: #fcfcfc">Next &raquo;</a></span>

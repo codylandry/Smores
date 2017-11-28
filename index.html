@@ -54,12 +54,6 @@
             
     <li class="toctree-l2"><a href="#smores">Smores</a></li>
     
-        <ul>
-        
-            <li><a class="toctree-l3" href="#todos">TODOS</a></li>
-        
-        </ul>
-    
 
     </ul>
 	    </li>
@@ -74,11 +68,7 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="api/templateString/">TemplateString</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="api/templateFile/">TemplateFile</a>
+    <a class="" href="api/fields/">Fields</a>
                 </li>
                 <li class="">
                     
@@ -123,7 +113,7 @@
             <div class="section">
               
                 <h1 id="smores">Smores</h1>
-<p><a href="https://circleci.com/gh/codylandry/Smores"><img alt="CircleCI" src="https://img.shields.io/circleci/project/github/codylandry/Smores.svg" /></a>
+<p><a href=""><img alt="CircleCI branch" src="https://img.shields.io/circleci/project/github/codylandry/Smores/master.svg" /></a>
 <a href="https://coveralls.io/github/codylandry/Smores?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/codylandry/Smores/badge.svg?branch=master" /></a></p>
 <p>Smores allows you to specify a schema for user facing template features.  It leverages marshmallow (hence 'smores') to
 populate and transform data that is then rendered via jinja.  It has a parser that presents a more friendly syntax to 
@@ -136,16 +126,7 @@ for the Address schema.  You can define other template attributes as well.  For 
 of the Address schema below.  Typing {user.address.google_link} will populate and insert that link.  </p>
 <p>smores.tag_autocomplete is a method where you can provide a tag 'fragment' and it will return the possible options below that.
 For example:</p>
-<pre><code>for the schemas below
-
-smores.tag_autocomplete("") returns ['user', 'address', 'coordinates']
-smores.tag_autocomplete("user") returns ['id', 'name', 'email', 'address', '_default_template']
-smores.tag_autocomplete("user.address.geo") returns ['lat', 'lng', '_default_template']
-
-Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
-shouldn't be appended to the tag in the ui.
-</code></pre>
-<pre><code class="python">from smores import Smores
+<pre><code class="python">from smores import Smores, TemplateString
 from marshmallow import Schema, fields
 
 # instantiate a smores instance
@@ -156,7 +137,7 @@ smores = Smores()
 class Coordinates(Schema):
     lat = fields.Decimal()
     lng = fields.Decimal()
-    _default_template = smores.TemplateString(&quot;{{lat}},{{lng}}&quot;)
+    _default_template = TemplateString(&quot;{{lat}},{{lng}}&quot;)
 
 @smores.schema
 class Address(Schema):
@@ -166,8 +147,8 @@ class Address(Schema):
     state = fields.String()
     zipcode = fields.String()
     coordinates = fields.Nested(Coordinates)
-    google_link = smores.TemplateString('&lt;a href=&quot;https://maps.google.com/?ll={{coordinates}}&quot;&gt;View Map&lt;/a&gt;')
-    _default_template = smores.TemplateString(&quot;&quot;&quot;
+    google_link = TemplateString('&lt;a href=&quot;https://maps.google.com/?ll={{coordinates}}&quot;&gt;View Map&lt;/a&gt;')
+    _default_template = TemplateString(&quot;&quot;&quot;
         &lt;div&gt;{{&lt;a href=&quot;https://maps.google.com/?ll={{coordinates}}&quot;&gt;View Map&lt;/a&gt;}}&lt;/div&gt;
         &lt;div&gt;{{street}} -- {{suite}}&lt;/div&gt;
         &lt;div&gt;{{city}}, {{state}} {{zipcode}}&lt;/div&gt;
@@ -179,14 +160,32 @@ class User(Schema):
     name = fields.String()
     email = fields.Email()
     address = fields.Nested(Address)
-    _default_template = smores.TemplateString(&quot;&quot;&quot;
+    _default_template = TemplateString(&quot;&quot;&quot;
         &lt;div&gt;{{name}}&lt;/div&gt;
         &lt;div&gt;E: {{email}}&lt;/div&gt;
         &lt;div&gt;{{address}}&lt;/div&gt;
     &quot;&quot;&quot;)
+</code></pre>
 
+<pre><code class="python">    # for the schemas above, simply invoke the autocomplete method with a tag fragment
 
-# provide data to the render function
+    &gt;&gt;&gt; smores.autocomplete(&quot;&quot;)
+    AutocompleteResponse(tagStatus='INVALID', options=['address', 'coordinates', 'user'])
+
+    &gt;&gt;&gt; smores.autocomplete('user')
+    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'address', 'email', 'id', 'name'])
+
+    &gt;&gt;&gt; smores.autocomplete('us')
+    AutocompleteResponse(tagStatus='INVALID', options=['user'])
+
+    &gt;&gt;&gt; smores.autocomplete(&quot;user.address.coordinates&quot;)
+    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'lat', 'lng'])
+
+    # Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
+    # shouldn't be appended to the tag in the ui.
+</code></pre>
+
+<pre><code class="python"># provide data to the render function
 data = {
     &quot;user&quot;: {
         &quot;id&quot;: 1,
@@ -229,20 +228,7 @@ print smores.render(data, user_template)
 #     &lt;div&gt;Kulas Light -- Apt. 556&lt;/div&gt;
 #     &lt;div&gt;Gwenborough, MD 92998-3874&lt;/div&gt;
 # &lt;/div&gt;
-
 </code></pre>
-
-<h3 id="todos">TODOS</h3>
-<ul>
-<li>[ ] Publish on PyPI</li>
-<li>[ ] Make parser pluggable to support different tag syntax styles</li>
-<li>[ ] Add template analyzer to get list of required data</li>
-<li>[X] tag_autocomplete should have only and exclude</li>
-<li>[X] Add test that use model classes from an orm (probably use Pony and sqlite)</li>
-<li>[X] Add CircleCi integration for PR's</li>
-<li>[ ] Improve Documentation</li>
-<li>[ ] Add option to not use parser</li>
-</ul>
               
             </div>
           </div>
@@ -294,5 +280,5 @@ print smores.render(data, user_template)
 
 <!--
 MkDocs version : 0.17.2
-Build Date UTC : 2017-11-28 01:25:54
+Build Date UTC : 2017-11-28 03:14:13
 -->

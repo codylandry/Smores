@@ -62,11 +62,7 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="../templateString/">TemplateString</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../templateFile/">TemplateFile</a>
+    <a class="" href="../fields/">Fields</a>
                 </li>
                 <li class=" current">
                     
@@ -124,8 +120,15 @@
 <pre><code class="python">get_module_schemas(module_)
 </code></pre>
 
-<p>Gets all schemas from module_
-<h2 id="smores.utils.loop_table_rows">loop_table_rows</h2></p>
+<p>Returns list of all classes found in the module_</p>
+<p><strong>Arguments:</strong></p>
+<pre><code>module_ (module): where to find schemas
+</code></pre>
+<p><strong>Returns:</strong></p>
+<pre><code>list: schemas found in module_
+</code></pre>
+<h2 id="smores.utils.loop_table_rows">loop_table_rows</h2>
+
 <pre><code class="python">loop_table_rows(iterable_tags, template_string)
 </code></pre>
 
@@ -134,34 +137,41 @@ iterating over values in a list of objects.  It searches for table cells
 with particular tags and wraps the table row (and subsequent rows if they also contain the tags) with
 a jinja for loop using the iterator, iterable tuple from 'iterable_tags'
 Example:</p>
-<p>iterable_tags = {
-    "mydogs.*": ("mydogs", "user.dogs")
-}</p>
-<p>input = '''
-    <table>
-        <tr>
-            <td>{mydogs.name}</td>
-        </tr>
-        <tr>
-            <td>{mydogs.weight}</td>
-        </tr>
-    </table>
-'''</p>
-<p><strong>becomes:</strong></p>
-<table>
-    {% for mydogs in user.dogs %}
-        <tr>
-            <td>{mydogs.name}</td>
-        </tr>
-        <tr>
-            <td>{mydogs.weight}</td>
-        </tr>
-    {% endfor %}
-</table>
+<p><strong>Arguments:</strong></p>
+<pre><code>iterable_tags (dict): mapping of
+template_string (str): jinja template string
+</code></pre>
+<p><strong>Returns:</strong></p>
+<pre><code>string: transformed template string
+</code></pre>
+<p><strong>Example:</strong></p>
+<pre><code class="python">iterable_tags = {
+    &quot;mydogs.*&quot;: (&quot;mydogs&quot;, &quot;user.dogs&quot;)
+}
 
-<p>:param iterable_tags: a dict {<tag to match>: tuple(iterator: string, iterable: string)}
-:param template_string: jinja template string
-:return: transformed template string</p>
+input = '''
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;{mydogs.name}&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;{mydogs.weight}&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+'''
+
+&gt;&gt;&gt; smores.utils.loop_table_rows(input)
+&lt;table&gt;
+    {% for mydogs in user.dogs %}
+        &lt;tr&gt;
+            &lt;td&gt;{mydogs.name}&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;{mydogs.weight}&lt;/td&gt;
+        &lt;/tr&gt;
+    {% endfor %}
+&lt;/table&gt;
+</code></pre>
               
             </div>
           </div>
@@ -170,7 +180,7 @@ Example:</p>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="../templateFile/" class="btn btn-neutral" title="TemplateFile"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../fields/" class="btn btn-neutral" title="Fields"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -198,7 +208,7 @@ Example:</p>
           <a href="https://github.com/codylandry/Smores/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href="../templateFile/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../fields/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
     </span>
