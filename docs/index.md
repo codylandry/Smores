@@ -61,22 +61,22 @@ class User(Schema):
    
    
 ```python
-    # for the schemas above, simply invoke the autocomplete method with a tag fragment
-    
-    >>> smores.autocomplete("")
-    AutocompleteResponse(tagStatus='INVALID', options=['address', 'coordinates', 'user'])
-    
-    >>> smores.autocomplete('user')
-    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'address', 'email', 'id', 'name'])
-    
-    >>> smores.autocomplete('us')
-    AutocompleteResponse(tagStatus='INVALID', options=['user'])
-    
-    >>> smores.autocomplete("user.address.coordinates")
-    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'lat', 'lng'])
-    
-    # Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
-    # shouldn't be appended to the tag in the ui.
+# for the schemas above, simply invoke the autocomplete method with a tag fragment
+
+>>> smores.autocomplete("")
+AutocompleteResponse(tagStatus='INVALID', options=['address', 'coordinates', 'user'])
+
+>>> smores.autocomplete('user')
+AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'address', 'email', 'id', 'name'])
+
+>>> smores.autocomplete('us')
+AutocompleteResponse(tagStatus='INVALID', options=['user'])
+
+>>> smores.autocomplete("user.address.coordinates")
+AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'lat', 'lng'])
+
+# Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
+# shouldn't be appended to the tag in the ui.
 ``` 
 
 
