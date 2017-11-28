@@ -10,3 +10,5 @@ smores.egg-info/
 .coverage
 site/
 _build/
+build/
+dist/
