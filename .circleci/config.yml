@@ -4,13 +4,11 @@
 #
 version: 2
 
-general:
-  branches:
-    ignore:
-      - gh-pages
-
 jobs:
   build:
+    branches:
+      ignore:
+        - gh-pages
     working_directory: ~/smores
     docker:
       - image: circleci/python:2.7.13
