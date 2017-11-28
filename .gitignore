@@ -1,14 +1,14 @@
 # Created by .ignore support plugin (hsz.mobi)
-/venv/
+/venv
 .idea
 .cache
 *.pyc
 .DS_Store
-.eggs/
+.eggs
 _dev.py
-smores.egg-info/
+smores.egg-info
 .coverage
-site/
-_build/
-build/
-dist/
+site
+_build
+build
+dist
