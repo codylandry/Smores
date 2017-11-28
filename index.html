@@ -54,6 +54,14 @@
             
     <li class="toctree-l2"><a href="#smores">Smores</a></li>
     
+        <ul>
+        
+            <li><a class="toctree-l3" href="#installation">Installation</a></li>
+        
+            <li><a class="toctree-l3" href="#quickstart">Quickstart</a></li>
+        
+        </ul>
+    
 
     </ul>
 	    </li>
@@ -119,6 +127,11 @@
 populate and transform data that is then rendered via jinja.  It has a parser that presents a more friendly syntax to 
 users (ex. {user.addresses:1.street}).  It also includes an autocomplete method that gives you intellisense style 
 options given a tag fragment.  </p>
+<h2 id="installation">Installation</h2>
+<pre><code class="bash">pip install smores
+</code></pre>
+
+<h2 id="quickstart">Quickstart</h2>
 <p>Smores provides two Marshmallow field types called TemplateString and TemplateFile.  Templates defined in these fields
 are scoped to that schema and it's descendants.  Each schema can have a _default_template that, if defined, will what
 is inserted if the associated tag ends with that schema.  For example: typing {user.address} will render the _default_template
@@ -280,5 +293,5 @@ print smores.render(data, user_template)
 
 <!--
 MkDocs version : 0.17.2
-Build Date UTC : 2017-11-28 03:14:13
+Build Date UTC : 2017-11-28 03:34:14
 -->
