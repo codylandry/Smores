@@ -8,6 +8,13 @@ populate and transform data that is then rendered via jinja.  It has a parser th
 users (ex. {user.addresses:1.street}).  It also includes an autocomplete method that gives you intellisense style 
 options given a tag fragment.  
 
+## Installation
+```bash
+pip install smores
+```
+
+## Quickstart
+
 Smores provides two Marshmallow field types called TemplateString and TemplateFile.  Templates defined in these fields
 are scoped to that schema and it's descendants.  Each schema can have a _default_template that, if defined, will what
 is inserted if the associated tag ends with that schema.  For example: typing {user.address} will render the _default_template
@@ -61,22 +68,22 @@ class User(Schema):
    
    
 ```python
-# for the schemas above, simply invoke the autocomplete method with a tag fragment
-
->>> smores.autocomplete("")
-AutocompleteResponse(tagStatus='INVALID', options=['address', 'coordinates', 'user'])
-
->>> smores.autocomplete('user')
-AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'address', 'email', 'id', 'name'])
-
->>> smores.autocomplete('us')
-AutocompleteResponse(tagStatus='INVALID', options=['user'])
-
->>> smores.autocomplete("user.address.coordinates")
-AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'lat', 'lng'])
-
-# Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
-# shouldn't be appended to the tag in the ui.
+    # for the schemas above, simply invoke the autocomplete method with a tag fragment
+    
+    >>> smores.autocomplete("")
+    AutocompleteResponse(tagStatus='INVALID', options=['address', 'coordinates', 'user'])
+    
+    >>> smores.autocomplete('user')
+    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'address', 'email', 'id', 'name'])
+    
+    >>> smores.autocomplete('us')
+    AutocompleteResponse(tagStatus='INVALID', options=['user'])
+    
+    >>> smores.autocomplete("user.address.coordinates")
+    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'lat', 'lng'])
+    
+    # Receiving '_default_template' or no results means that the current tag fragment is valid but _default_template
+    # shouldn't be appended to the tag in the ui.
 ``` 
 
 

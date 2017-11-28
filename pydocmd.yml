@@ -36,3 +36,4 @@ site_dir: _build/site
 theme:    readthedocs
 loader:   pydocmd.loader.PythonLoader
 preprocessor: pydocmd.preprocessor.Preprocessor
+google_analytics: ['UA-110318840-1', 'Smores Docs']

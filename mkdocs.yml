@@ -1,11 +1,14 @@
-docs_dir: _build/pydocmd
-pages:
-- {Home: index.md}
-- API:
-  - {Smores: api/smores.md}
-  - {Fields: api/fields.md}
-  - {Utils: api/utils.md}
-repo_url: https://github.com/codylandry/Smores
-site_dir: _build/site
 site_name: Smores
 theme: readthedocs
+repo_url: https://github.com/codylandry/Smores
+site_author: Cody Landry
+
+pages:
+  - Home: index.md
+  - API:
+    - Smores: api/smores.md
+    - Fields: api/fields.md
+    - Utils: api/utils.md
+
+theme:    readthedocs
+google_analytics: ['UA-110318840-1', 'auto']
