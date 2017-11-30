@@ -8,6 +8,12 @@ def _bracketize(tokens):
 def _colonize(tokens):
 	return ":" + str(int(tokens[0][0]) + 1)
 
+def de_bracketize(_str):
+	_BRACKET_INDEX = Word('0123456789').setResultsName('index')
+	_LIST_INDEX = Group(Literal('[').suppress() + _BRACKET_INDEX + Literal(']').suppress()).setParseAction(_colonize)
+	return _LIST_INDEX.transformString(_str)
+
+
 def _lowerize(tokens):
 	return tokens[0].lower()
 
@@ -21,7 +27,7 @@ def get_original_tag(tag):
 	_START = Literal('{{').setParseAction(lambda: '{')
 	_END = Literal('}}').setParseAction(lambda: '}')
 	_ATTR_NAME = Word(alphanums + '_').setParseAction(_lowerize)
-	_LIST_INDEX = Group(Literal('[').suppress() + integer + Literal(']').suppress()).setParseAction(_colonize)
+	_LIST_INDEX = Group(Literal('[').suppress() + COLON_INDEX + Literal(']').suppress()).setParseAction(_colonize)
 	_ATTR = Group(_ATTR_NAME + Optional(_LIST_INDEX))
 	_PATH = delimitedList(_ATTR, delim='.').setParseAction(_combine_path).setWhitespaceChars(' ')
 	_BASE_TAG = Group(_START + _PATH + _END)
@@ -48,7 +54,7 @@ def _get_jinja_tag(default):
 	return wrapped
 
 
-def _adjust_indexes(tokens):
+def _decrement_index(tokens):
 	# make indexes '1-based'
 	return str(int(tokens[0]) - 1)
 
@@ -58,8 +64,8 @@ JINJA_TOKENS = Literal('%') | Literal('#') | Literal('{')
 ParserElement.setDefaultWhitespaceChars('')
 START = Literal('{').setParseAction(lambda: '{{')
 END = Literal('}').setParseAction(lambda: '}}')
-integer = Word('0123456789').setParseAction(_adjust_indexes).setResultsName('index')
-LIST_INDEX = Group(Literal(':').suppress() + integer).setParseAction(_bracketize)
+COLON_INDEX = Word('0123456789').setParseAction(_decrement_index).setResultsName('index')
+LIST_INDEX = Group(Literal(':').suppress() + COLON_INDEX).setParseAction(_bracketize)
 ATTR_NAME = Word(alphanums + '_').setParseAction(_lowerize)
 ATTR = Group(ATTR_NAME + Optional(LIST_INDEX))
 PATH = delimitedList(ATTR, delim='.').setParseAction(_combine_path).setWhitespaceChars(' ')

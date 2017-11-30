@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields
-from parser import to_jinja_template, ATTR, delimitedList
+from parser import to_jinja_template, ATTR, delimitedList, de_bracketize
 from jinja2 import Environment
 from collections import namedtuple
 from inspect import isfunction
@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from .utils import get_module_schemas
 
 
-AutocompleteResponse = namedtuple('AutocompleteResponse', ('tagStatus', 'options'))
+AutocompleteResponse = namedtuple('AutocompleteResponse', ('tagStatus', 'options', 'validFragment'))
 
 
 class TemplateString(fields.Field):
@@ -240,8 +240,8 @@ class Smores(object):
 		    >>> smores.autocomplete("user.address.coordinates")
 		    AutocompleteResponse(tagStatus='VALID', options=['_default_template', 'lat', 'lng'])
 		"""
+		valid_fragment = ""
 		fragment = fragment.strip()
-		sort_and_lower = lambda l: sorted([getattr(l, i) for i in l])
 
 		# include/exclude root schemas from results
 		allowed_root_schemas = self.schemas[:]
@@ -255,7 +255,7 @@ class Smores(object):
 
 		# return allowed schemas if fragment is blank
 		if not fragment:
-			return AutocompleteResponse("INVALID", sorted([s.__name__.lower() for s in allowed_root_schemas]))
+			return AutocompleteResponse("INVALID", sorted([s.__name__.lower() for s in allowed_root_schemas]), valid_fragment)
 
 		# parse fragment into tokens
 		attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
@@ -264,22 +264,24 @@ class Smores(object):
 		# attempt to get the root schema
 		root_schema = next((s for s in allowed_root_schemas if s.__name__.lower() == attrs[0].lower()), None)
 		if root_schema:
+			valid_fragment += attrs[0].lower()
 			current_node = root_schema()
 
 		# otherwise get any schema starting with fragment
 		elif len(attrs) == 1:
 			result = [s.__name__.lower() for s in allowed_root_schemas
 			          if s.__name__.lower().startswith(attrs[0].lower())]
-			return AutocompleteResponse("INVALID", sorted(result))
+			return AutocompleteResponse("INVALID", sorted(result), valid_fragment)
 
 		# otherwise, it's an invalid fragment
 		else:
-			return AutocompleteResponse("INVALID", [])
+			return AutocompleteResponse("INVALID", [], valid_fragment)
 
 		get_fields = lambda n: map(lambda s: s.lower(), n.declared_fields.keys())
 		current_node_field_names = get_fields(current_node)
 		output = current_node_field_names
 		attr = attrs[0].lower()
+
 		for idx, attr in enumerate(attrs[1:]):
 			is_last_attr = idx == len(attrs[1:]) - 1
 			current_node_field_names = get_fields(current_node)
@@ -302,8 +304,11 @@ class Smores(object):
 				else:
 					current_node = None
 
+				valid_fragment += "." + attr
+
 			# if attr is an array index, just continue
 			elif attr.startswith('['):
+				valid_fragment += de_bracketize(attr)
 				continue
 
 			# if the attr is only partially filled, return possible results
@@ -325,7 +330,7 @@ class Smores(object):
 		else:
 			output = []
 
-		return AutocompleteResponse(status, sorted(output))
+		return AutocompleteResponse(status, sorted(output), valid_fragment)
 
 	def render(self, data, template_string, sub_templates=None, fallback_value='', pre_process=None):
 		"""
