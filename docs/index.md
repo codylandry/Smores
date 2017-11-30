@@ -9,13 +9,18 @@ populate and transform data that is then rendered via jinja.  It has a parser th
 users (ex. {user.addresses:1.street}).  It also includes an autocomplete method that gives you intellisense style 
 options given a tag fragment.  
 
+## Installation
+```bash
+pip install smores
+```
+
 Smores provides two Marshmallow field types called TemplateString and TemplateFile.  Templates defined in these fields
 are scoped to that schema and it's descendants.  Each schema can have a _default_template that, if defined, will what
 is inserted if the associated tag ends with that schema.  For example: typing {user.address} will render the _default_template
 for the Address schema.  You can define other template attributes as well.  For example, see the 'google_link' attribute
 of the Address schema below.  Typing {user.address.google_link} will populate and insert that link.  
 
-smores.tag_autocomplete is a method where you can provide a tag 'fragment' and it will return the possible options below that.
+smores.autocomplete is a method where you can provide a tag 'fragment' and it will return the possible options below that.
 For example:
    
 ```python
