@@ -301,10 +301,12 @@ class Smores(object):
 
 					# otherwise update the field names
 					current_node_field_names = get_fields(current_node)
+					output = current_node_field_names
 				else:
 					current_node = None
 
 				valid_fragment += "." + attr
+				continue
 
 			# if attr is an array index, just continue
 			elif attr.startswith('['):
@@ -315,7 +317,8 @@ class Smores(object):
 			else:
 				current_node_field_names = [f for f in current_node_field_names if f.startswith(attr.lower())]
 
-			output = current_node_field_names
+				output = current_node_field_names
+				break
 
 		status = 'VALID'
 

@@ -116,21 +116,21 @@ def test_bad_render_inputs(smores_instance, input):
 
 # ------------------------------------------------------------------------------
 autocomplete_cases = [
-	("", AutocompleteResponse('INVALID', ['address', 'company', 'coordinates', 'dog', 'user'])),
+	("", AutocompleteResponse('INVALID', ['address', 'company', 'coordinates', 'dog', 'user'], "")),
 	("user", AutocompleteResponse('VALID', ['_default_template', 'address', 'basic', 'company',
-	                                           'dogs', 'email', 'id', 'long_template', 'name', 'phone', 'website'])),
-	("u", AutocompleteResponse('INVALID', ['user'])),
-	("user.a", AutocompleteResponse('INVALID', ['address'])),
-	("user.dogs", AutocompleteResponse('INVALID', [':1'])),
-	("user.dogs:1", AutocompleteResponse('INVALID', ['_default_template', 'name', 'with_greeting'])),
-	("user.dogs:1.name", AutocompleteResponse('VALID', [])),
-	("coordinates", AutocompleteResponse('INVALID', ['lat', 'lng'])),
-	("address.geo", AutocompleteResponse('INVALID', ['lat', 'lng'])),
-	("some.garbage", AutocompleteResponse('INVALID', [])),
-	("user.garbage", AutocompleteResponse('INVALID', [])),
-	("user.address.garbage", AutocompleteResponse('INVALID', [])),
-	("user.aliases.garbage", AutocompleteResponse('INVALID', [])),
-	("user.aliases:1.garbage", AutocompleteResponse('INVALID', [])),
+	                                           'dogs', 'email', 'id', 'long_template', 'name', 'phone', 'website'], "user")),
+	("u", AutocompleteResponse('INVALID', ['user'], "")),
+	("user.a", AutocompleteResponse('INVALID', ['address'], "user")),
+	("user.dogs", AutocompleteResponse('INVALID', [':1'], "user")),
+	("user.dogs:1", AutocompleteResponse('INVALID', ['_default_template', 'name', 'with_greeting'], "user.dogs:1")),
+	("user.dogs:1.name", AutocompleteResponse('VALID', [], "user.dogs:1.name")),
+	("coordinates", AutocompleteResponse('INVALID', ['lat', 'lng'], "coordinates")),
+	("address.geo", AutocompleteResponse('INVALID', ['lat', 'lng'], "address.geo")),
+	("some.garbage", AutocompleteResponse('INVALID', [], "")),
+	("user.garbage", AutocompleteResponse('INVALID', [], "user")),
+	("user.address.garbage", AutocompleteResponse('INVALID', [], "user.address")),
+	("user.aliases.garbage", AutocompleteResponse('INVALID', [], "user")),
+	("user.aliases:1.garbage", AutocompleteResponse('INVALID', [], "user")),
 ]
 
 @pytest.mark.parametrize("input, output", autocomplete_cases)
@@ -138,10 +138,10 @@ def test_autocomplete(smores_instance, input, output):
 	assert smores_instance.autocomplete(input) == output
 
 autocomplete_only_cases = [
-	('user', AutocompleteResponse('INVALID', [])),
-	('u', AutocompleteResponse('INVALID', [])),
-	('a', AutocompleteResponse('INVALID', ['address'])),
-	('address.geo', AutocompleteResponse('INVALID', ['lat', 'lng'])),
+	('user', AutocompleteResponse('INVALID', [], "")),
+	('u', AutocompleteResponse('INVALID', [], "")),
+	('a', AutocompleteResponse('INVALID', ['address'], "")),
+	('address.geo', AutocompleteResponse('INVALID', ['lat', 'lng'], "address.geo")),
 ]
 
 @pytest.mark.parametrize("input, output", autocomplete_only_cases)
@@ -151,10 +151,10 @@ def test_autocomplete_only(smores_instance, input, output):
 
 autocomplete_exclude_cases = [
 	('user', AutocompleteResponse('VALID', ['_default_template', 'address', 'basic', 'company',
-	                                           'dogs', 'email', 'id', 'long_template', 'name', 'phone', 'website'])),
-	('u', AutocompleteResponse('INVALID', ['user'])),
-	('a', AutocompleteResponse('INVALID', [])),
-	('address.geo', AutocompleteResponse('INVALID', [])),
+	                                           'dogs', 'email', 'id', 'long_template', 'name', 'phone', 'website'], "user")),
+	('u', AutocompleteResponse('INVALID', ['user'], "")),
+	('a', AutocompleteResponse('INVALID', [], "")),
+	('address.geo', AutocompleteResponse('INVALID', [], "")),
 ]
 
 @pytest.mark.parametrize("input, output", autocomplete_exclude_cases)
