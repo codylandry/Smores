@@ -343,7 +343,7 @@ class Smores(object):
 		get_fields = lambda n: map(lambda s: s.lower(), n.declared_fields.keys())
 		current_node_field_names = get_fields(current_node)
 		output = current_node_field_names
-		attr = attrs[0].lower()
+		attr = attrs[0]
 
 		for idx, attr in enumerate(attrs[1:]):
 			is_last_attr = idx == len(attrs[1:]) - 1
@@ -368,7 +368,7 @@ class Smores(object):
 				else:
 					current_node = None
 
-				valid_fragment += "." + attr
+				valid_fragment += "." + attr.lower()
 				continue
 
 			# if attr is an array index, just continue
