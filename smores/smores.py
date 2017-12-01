@@ -5,6 +5,8 @@ from collections import namedtuple
 from inspect import isfunction
 from contextlib import contextmanager
 from .utils import get_module_schemas
+from marshmallow import class_registry
+from jinja2.runtime import Context
 
 
 AutocompleteResponse = namedtuple('AutocompleteResponse', ('tagStatus', 'options', 'validFragment'))
@@ -71,16 +73,19 @@ class TemplateFile(TemplateString):
 		# pass it on to TemplateString
 		super(TemplateFile, self).__init__(template_string, use_parser=use_parser, *args, **kwargs)
 
-
 class SmoresEnvironment(Environment):
 	def __init__(self, fallback_value='', *args, **kwargs):
 		super(SmoresEnvironment, self).__init__(*args, **kwargs)
 		self.fallback_value = fallback_value
 
 	def getattr(self, obj, attribute):
+		"""Get an item or attribute of an object but prefer the attribute.
+		Unlike :meth:`getitem` the attribute *must* be a bytestring.
+		"""
 		try:
-			return super(SmoresEnvironment, self).getattr(obj, attribute)
-		except:
+			data = {k.lower(): v for k, v in obj.items()}
+			return data[attribute.lower()]
+		except (TypeError, LookupError, AttributeError):
 			return self.fallback_value
 
 
