@@ -1,13 +1,14 @@
-from marshmallow import Schema, fields
+from marshmallow import fields
+from marshmallow.schema import SchemaMeta, BaseSchema
+from marshmallow.base import SchemaABC
+from marshmallow.compat import with_metaclass
+from .utils import get_module_schemas
 from parser import to_jinja_template, ATTR, delimitedList, de_bracketize
 from jinja2 import Environment
 from collections import namedtuple
 from inspect import isfunction
+import class_registry
 from contextlib import contextmanager
-from .utils import get_module_schemas
-from marshmallow import class_registry
-from jinja2.runtime import Context
-
 
 AutocompleteResponse = namedtuple('AutocompleteResponse', ('tagStatus', 'options', 'validFragment'))
 
@@ -73,11 +74,8 @@ class TemplateFile(TemplateString):
 		# pass it on to TemplateString
 		super(TemplateFile, self).__init__(template_string, use_parser=use_parser, *args, **kwargs)
 
-class SmoresEnvironment(Environment):
-	def __init__(self, fallback_value='', *args, **kwargs):
-		super(SmoresEnvironment, self).__init__(*args, **kwargs)
-		self.fallback_value = fallback_value
 
+class SmoresEnvironment(Environment):
 	def getattr(self, obj, attribute):
 		"""Get an item or attribute of an object but prefer the attribute.
 		Unlike :meth:`getitem` the attribute *must* be a bytestring.
@@ -85,8 +83,65 @@ class SmoresEnvironment(Environment):
 		try:
 			data = {k.lower(): v for k, v in obj.items()}
 			return data[attribute.lower()]
-		except (TypeError, LookupError, AttributeError):
-			return self.fallback_value
+		except:
+			return self.undefined(obj=obj, name=attribute)
+
+
+class SmoresSchemaMeta(SchemaMeta):
+	def __init__(self, name, bases, attrs):
+		super(SchemaMeta, self).__init__(name, bases, attrs)
+		if name:
+			class_registry.register(name, self)
+		self._resolve_processors()
+
+
+class Schema(with_metaclass(SmoresSchemaMeta, BaseSchema)):
+	__doc__ = BaseSchema.__doc__
+
+
+_RECURSIVE_NESTED = 'self'
+
+
+class Nested(fields.Nested):
+	@property
+	def schema(self):
+		"""The nested Schema object.
+		.. versionchanged:: 1.0.0
+			Renamed from `serializer` to `schema`
+		"""
+		if not self.__schema:
+			# Ensure that only parameter is a tuple
+			if isinstance(self.only, basestring):
+				only = (self.only,)
+			else:
+				only = self.only
+
+			# Inherit context from parent.
+			context = getattr(self.parent, 'context', {})
+			if isinstance(self.nested, type) and \
+					issubclass(self.nested, SchemaABC):
+				self.__schema = self.nested(many=self.many,
+				                            only=only, exclude=self.exclude, context=context,
+				                            load_only=self._nested_normalized_option('load_only'),
+				                            dump_only=self._nested_normalized_option('dump_only'))
+			elif isinstance(self.nested, basestring):
+				if self.nested == _RECURSIVE_NESTED:
+					parent_class = self.parent.__class__
+					self.__schema = parent_class(many=self.many, only=only,
+					                             exclude=self.exclude, context=context,
+					                             load_only=self._nested_normalized_option('load_only'),
+					                             dump_only=self._nested_normalized_option('dump_only'))
+				else:
+					schema_class = class_registry.get_class(self.nested)
+					self.__schema = schema_class(many=self.many,
+					                             only=only, exclude=self.exclude, context=context,
+					                             load_only=self._nested_normalized_option('load_only'),
+					                             dump_only=self._nested_normalized_option('dump_only'))
+			else:
+				raise ValueError('Nested fields must be passed a '
+				                 'Schema, not {0}.'.format(self.nested.__class__))
+			self.__schema.ordered = getattr(self.parent, 'ordered', False)
+		return self.__schema
 
 
 class Smores(object):
@@ -97,11 +152,11 @@ class Smores(object):
 	# Arguments:
 		default_template_name (str): The name you'd like to use for default schema templates
 	"""
+
 	def __init__(self, default_template_name='_default_template'):
 		self._DEFAULT_TEMPLATE = default_template_name
 
 		# This jinja environment sets up a function to process variables into either serialized form or template
-		self.env = SmoresEnvironment(finalize=self._process_jinja_variables())
 		self.user_templates = {}
 		self._registered_schemas = set([])
 
@@ -115,14 +170,15 @@ class Smores(object):
 		:return: value to be rendered (string or template)
 		"""
 		_DEFAULT_TEMPLATE = self._DEFAULT_TEMPLATE
+
 		def process(var):
-			if isinstance(var, (list, )):
+			if isinstance(var, (list,)):
 				# if var is a list return the _default_template for each item
 				try:
 					return "".join([v[_DEFAULT_TEMPLATE] for v in var])
 				except:
 					return ""
-			if isinstance(var, (dict, )):
+			if isinstance(var, (dict,)):
 				# if var is a dict, then we must be returning a single schema, so try to get the _default_template
 				try:
 					return var[_DEFAULT_TEMPLATE]
@@ -130,6 +186,7 @@ class Smores(object):
 					return ""
 			# fallback to just returning the var as is (a plain field value)
 			return var
+
 		return process
 
 	@contextmanager
@@ -260,7 +317,8 @@ class Smores(object):
 
 		# return allowed schemas if fragment is blank
 		if not fragment:
-			return AutocompleteResponse("INVALID", sorted([s.__name__.lower() for s in allowed_root_schemas]), valid_fragment)
+			return AutocompleteResponse("INVALID", sorted([s.__name__.lower() for s in allowed_root_schemas]),
+			                            valid_fragment)
 
 		# parse fragment into tokens
 		attrs = delimitedList(ATTR.setParseAction(lambda x: x[0]), delim='.')
@@ -359,7 +417,7 @@ class Smores(object):
 			'sub_templates must be a dict of <tag>: <subtemplate>'
 		assert not pre_process or isfunction(pre_process), \
 			'pre_process must be a function'
-		assert isinstance(template_string, (basestring, )), \
+		assert isinstance(template_string, (basestring,)), \
 			'template_string expected type string got %s' % type(template_string)
 
 		# substitute sub template tag names with
@@ -376,15 +434,15 @@ class Smores(object):
 			jinja_template = pre_process(jinja_template)
 
 		# create the template object
-		template = self.env.from_string(jinja_template)
+		env = SmoresEnvironment(finalize=self._process_jinja_variables())
+		template = env.from_string(jinja_template)
 
 		get_schema = lambda k: next((s for s in self.schemas if s.__name__.lower() == k.lower()), None)
 		context_dict = {}
 		for k, v in data.items():
 			schema = get_schema(k)
 			if schema:
-				s = schema(context=dict(env=self.env))
+				s = schema(context=dict(env=env))
 				context_dict[k.lower()] = s.dump(v).data
 
 		return template.render(**context_dict)
-

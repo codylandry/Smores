@@ -1,6 +1,6 @@
 import re
 import inspect
-from marshmallow import Schema
+import smores
 
 def get_module_schemas(module_):
 	"""
@@ -12,7 +12,7 @@ def get_module_schemas(module_):
 	# Returns:
 		list: schemas found in module_
 	"""
-	is_schema = lambda obj: inspect.isclass(obj) and issubclass(obj, (Schema, ))
+	is_schema = lambda obj: inspect.isclass(obj) and issubclass(obj, (smores.Schema, )) and obj.__name__.lower() != 'schema'
 	schema_tuples = inspect.getmembers(module_, is_schema)
 	return [s[1] for s in schema_tuples]
 

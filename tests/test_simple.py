@@ -1,10 +1,10 @@
-from smores import Smores, AutocompleteResponse, __version__
+from smores import Smores, AutocompleteResponse, __version__, Schema, Nested
 from smores.parser import to_jinja_template
 from smores.utils import loop_table_rows, get_module_schemas
-from sample_data import users, register_schemas
+from sample_data import users
 from create_db import User, db_session, select
 import pytest
-from marshmallow import Schema, fields
+from marshmallow import fields
 import schemas_module
 
 
@@ -12,7 +12,7 @@ import schemas_module
 @pytest.fixture(scope='module')
 def smores_instance():
 	smores = Smores()
-	register_schemas(smores)
+	smores.add_module_schemas(schemas_module)
 	return smores
 
 
@@ -59,18 +59,16 @@ def test_render_default_template_with_models(smores_instance, input, output):
 def test_access_list_with_no_default_template():
 	# creates schema with no _default_template and attempts to access it directly from a nested
 	# field with many = True
-	class Dog(Schema):
+	class NoTemplateDog(Schema):
 		name = fields.String()
 
-	class User(Schema):
-		id = fields.Integer()
-		name = fields.String()
-		dogs = fields.Nested(Dog, many=True)
+	class TestUser(Schema):
+		dogs = Nested(NoTemplateDog, many=True)
 
 	smores_instance = Smores()
-	smores_instance.add_schemas([User])
-	template = "{user.dogs}"
-	result = smores_instance.render(dict(user=users[0]), template)
+	template = "{TestUser.dogs}"
+	with smores_instance.with_schemas([NoTemplateDog, TestUser]):
+		result = smores_instance.render(dict(testuser=users[0]), template)
 	assert result == ""
 
 # ------------------------------------------------------------------------------
@@ -122,7 +120,7 @@ autocomplete_cases = [
 	("u", AutocompleteResponse('INVALID', ['user'], "")),
 	("user.a", AutocompleteResponse('INVALID', ['address'], "user")),
 	("user.dogs", AutocompleteResponse('INVALID', [':1'], "user")),
-	("user.dogs:1", AutocompleteResponse('INVALID', ['_default_template', 'name', 'with_greeting'], "user.dogs:1")),
+	("user.dogs:1", AutocompleteResponse('INVALID', ['_default_template', 'dog', 'name', 'with_greeting'], "user.dogs:1")),
 	("user.dogs:1.name", AutocompleteResponse('VALID', [], "user.dogs:1.name")),
 	("coordinates", AutocompleteResponse('INVALID', ['lat', 'lng'], "coordinates")),
 	("address.geo", AutocompleteResponse('INVALID', ['lat', 'lng'], "address.geo")),
@@ -198,7 +196,8 @@ fallback_cases = [
 @pytest.mark.parametrize("fallback_value, output", fallback_cases)
 def test_smores_fallback_string(smores_instance, fallback_value, output):
 	template = "{user.name}--{user.email}--{user.notARealTag}"
-	assert smores_instance.render(dict(user=users[0]), template, fallback_value=fallback_value) == output
+	result = smores_instance.render(dict(user=users[0]), template, fallback_value=fallback_value)
+	assert  result == output
 
 # ------------------------------------------------------------------------------
 def test_subtemplates(smores_instance):
@@ -251,8 +250,8 @@ def test_invalid_root_attr_w_model(smores_instance):
 
 # ------------------------------------------------------------------------------
 def test_get_module_schemas():
-	schemas = get_module_schemas(schemas_module)
 	smores = Smores()
+	schemas = get_module_schemas(schemas_module)
 	smores.add_schemas(schemas)
 	res = smores.render(dict(user=users[0]), "{user.name}")
 	assert res == 'Leanne Graham'

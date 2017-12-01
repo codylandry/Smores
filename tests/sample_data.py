@@ -1,5 +1,5 @@
-from marshmallow import Schema, fields
-from smores import TemplateString, TemplateFile
+from marshmallow import fields
+from smores import TemplateString, TemplateFile, Schema
 
 users = [
 	{
@@ -25,7 +25,7 @@ users = [
 			"bs": "harness real-time e-markets"
 		},
 		"dogs": [
-			{"name": "Rufus"},
+			{"name": "Rufus", "dog": {"name": "dog"}},
 			{"name": "Snoopy"},
 			{"name": "Scratch"},
 			{"name": "Spot"},
@@ -240,47 +240,3 @@ users = [
 	}
 ]
 
-
-def register_schemas(smores):
-
-	# EXAMPLE Marshmallow Schemas
-	@smores.schema
-	class Coordinates(Schema):
-		lat = fields.Decimal()
-		lng = fields.Decimal()
-
-	@smores.schema
-	class Address(Schema):
-		street = fields.String()
-		suite = fields.String()
-		city = fields.String()
-		zipcode = fields.String()
-		geo = fields.Nested(Coordinates)
-		_default_template = TemplateString("{{street}}---{{city}}---{{geo}}")
-
-	@smores.schema
-	class Company(Schema):
-		name = fields.String()
-		catchPhrase = fields.String()
-		bs = fields.String()
-		_default_template = TemplateString("{{name}}---{{catchPhrase}}---{{bs}}")
-
-	@smores.schema
-	class Dog(Schema):
-		name = fields.String()
-		_default_template = TemplateString("Name: {{ name }}")
-		with_greeting = TemplateString('Hi, this is my dog {name}', use_parser=True)
-
-	@smores.schema
-	class User(Schema):
-		id = fields.Integer()
-		name = fields.String()
-		email = fields.Email()
-		address = fields.Nested(Address)
-		phone = fields.String()
-		website = fields.String()
-		company = fields.Nested(Company)
-		dogs = fields.Nested(Dog, many=True)
-		_default_template = TemplateString("""{{name}}---{{email}}""")
-		basic = TemplateFile("tests/user_basic.html")
-		long_template = TemplateString("{{name}}--{{phone}}--{{email}}--{{website}}--{{address.geo}}")

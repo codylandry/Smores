@@ -1,7 +1,5 @@
 from pony.orm import *
 from sample_data import users
-from smores import Smores
-from tests.sample_data import register_schemas
 db = Database()
 
 class User(db.Entity):
@@ -49,6 +47,3 @@ with db_session:
 		db_company = Company(user=db_user, **user['company'])
 		for dog in user.get('dogs', []):
 			db_dog = Dog(user=db_user, name=dog['name'])
-
-	smores = Smores()
-	register_schemas(smores)

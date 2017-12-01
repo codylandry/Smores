@@ -1,5 +1,5 @@
-from marshmallow import Schema, fields
-from smores import TemplateFile, TemplateString
+from marshmallow import fields
+from smores import TemplateFile, TemplateString, Schema, Nested
 
 class Coordinates(Schema):
 	lat = fields.Decimal()
@@ -11,7 +11,7 @@ class Address(Schema):
 	suite = fields.String()
 	city = fields.String()
 	zipcode = fields.String()
-	geo = fields.Nested(Coordinates)
+	geo = Nested(Coordinates)
 	_default_template = TemplateString("{{street}}---{{city}}---{{geo}}")
 
 
@@ -24,6 +24,7 @@ class Company(Schema):
 
 class Dog(Schema):
 	name = fields.String()
+	dog =  Nested('self')
 	_default_template = TemplateString("Name: {{ name }}")
 	with_greeting = TemplateString('Hi, this is my dog {name}', use_parser=True)
 
@@ -35,8 +36,8 @@ class User(Schema):
 	address = fields.Nested(Address)
 	phone = fields.String()
 	website = fields.String()
-	company = fields.Nested(Company)
-	dogs = fields.Nested(Dog, many=True)
+	company = Nested(Company)
+	dogs = Nested('Dog', many=True)
 	_default_template = TemplateString("""{{name}}---{{email}}""")
 	basic = TemplateFile("tests/user_basic.html")
 	long_template = TemplateString("{{name}}--{{phone}}--{{email}}--{{website}}--{{address.geo}}")
