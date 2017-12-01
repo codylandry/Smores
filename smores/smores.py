@@ -304,6 +304,7 @@ class Smores(object):
 		"""
 		valid_fragment = ""
 		fragment = fragment.strip()
+		valid = True
 
 		# include/exclude root schemas from results
 		allowed_root_schemas = self.schemas[:]
@@ -347,14 +348,18 @@ class Smores(object):
 
 		for idx, attr in enumerate(attrs[1:]):
 			is_last_attr = idx == len(attrs[1:]) - 1
-			current_node_field_names = get_fields(current_node)
+			try:
+				current_node_field_names = get_fields(current_node)
+			except:
+				current_node_field_names = []
 
 			# if valid attribute
 			if attr.lower() in current_node_field_names:
-				node = current_node.declared_fields[attr]
+				fields = {k.lower(): v for k, v in current_node.declared_fields.items()}
+				node = fields[attr.lower()]
 
 				# if nested field, get the associated schema
-				if isinstance(node, fields.Nested):
+				if isinstance(node, Nested):
 					current_node = node.schema
 
 					# if it's a many field and the last attr, return an option to index the array
@@ -378,6 +383,7 @@ class Smores(object):
 
 			# if the attr is only partially filled, return possible results
 			else:
+				valid = False
 				current_node_field_names = [f for f in current_node_field_names if f.startswith(attr.lower())]
 
 				output = current_node_field_names
@@ -395,6 +401,8 @@ class Smores(object):
 
 		else:
 			output = []
+
+		status = status if valid else "INVALID"
 
 		return AutocompleteResponse(status, sorted(output), valid_fragment)
 
