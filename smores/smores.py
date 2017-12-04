@@ -9,6 +9,7 @@ from collections import namedtuple
 from inspect import isfunction
 import class_registry
 from contextlib import contextmanager
+import re
 
 AutocompleteResponse = namedtuple('AutocompleteResponse', ('tagStatus', 'options', 'validFragment'))
 
@@ -275,6 +276,74 @@ class Smores(object):
 		"""
 		self.add_schemas(schema)
 		return schema
+
+	@staticmethod
+	def _filter_schemas(schemas, only=None, exclude=None):
+		schemas = schemas[:]
+
+		if only:
+			only = [s.lower() for s in only]
+			schemas = [s for s in schemas if s.__name__.lower() in only]
+
+		if exclude:
+			exclude = [s.lower() for s in exclude]
+			schemas = [s for s in schemas if s.__name__.lower() not in exclude]
+
+		return schemas
+
+
+
+	def get_tags(self, only=None, exclude=None):
+		"""
+		Retrieve the complete list of tags
+
+		# Arguments
+			only (list): only use these root schema names
+			exclude (list): exclude these root schema names
+
+		# Returns:
+			list: possible tags
+		"""
+		output = []
+		def build_tags(name, schema, ignore_fields=None):
+			ret = []
+			for field_name, field in schema._declared_fields.items():
+
+
+				if isinstance(field, Nested):
+					if field_name in (ignore_fields or []):
+						continue
+
+					full_path = name + "." + field_name
+
+					if field.many:
+						full_path += ":1"
+
+					check_re = re.compile(full_path + r"\.([a-zA-Z0-9_]*)($|\.)")
+					recursive_fields = [field_name] if field.nested == _RECURSIVE_NESTED else None
+					field_schema = field.schema if field.nested != _RECURSIVE_NESTED else schema
+					res = [(re.search(check_re, p).group(1), p) for p in
+					       build_tags(full_path, field_schema, ignore_fields=recursive_fields)]
+
+					res = [v for k, v in res
+					       if not field.only or k in field.only
+					       and not field.exclude or k not in field.exclude]
+					ret.extend(res)
+
+				elif self._DEFAULT_TEMPLATE != field_name:
+					ret.append(".".join([name, field_name]))
+			return ret
+
+		schemas = self._filter_schemas(self.schemas, only=only, exclude=exclude)
+		for s in schemas:
+			if self._DEFAULT_TEMPLATE in s._declared_fields:
+				output.append(s.__name__)
+			output.extend(build_tags(s.__name__, s))
+
+		output = sorted([p.lower() for p in output])
+
+		return output
+
 
 	def autocomplete(self, fragment, only=None, exclude=None):
 		"""

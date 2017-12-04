@@ -263,3 +263,33 @@ def test_add_module_schemas():
 	res = smores.render(dict(user=users[0]), "{user.name}")
 	assert res == 'Leanne Graham'
 
+
+# ------------------------------------------------------------------------------
+def test_get_tags_method(smores_instance):
+	test_result = smores_instance.get_tags(only=('user', 'address'))
+	expected_result = [
+		'address',
+		'address.city',
+		'address.geo.lat',
+		'address.geo.lng',
+		'address.street',
+		'address.suite',
+		'address.zipcode',
+		'user',
+		'user.address',
+		'user.basic',
+		'user.company.bs',
+		'user.company.catchphrase',
+		'user.company.name',
+		'user.dogs:1.dog.name',
+		'user.dogs:1.dog.with_greeting',
+		'user.dogs:1.name',
+		'user.dogs:1.with_greeting',
+		'user.email',
+		'user.id',
+		'user.long_template',
+		'user.name',
+		'user.phone',
+		'user.website'
+	]
+	assert test_result == expected_result
